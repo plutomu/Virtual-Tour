@@ -63,6 +63,15 @@ const segmentRules = {
     'seg-4-6': ['scene6'],
 };
 
+/* Maps each segment ID to the two nodes it connects */
+const segmentMap = {
+    'seg-1-2': ['scene1', 'scene2'],
+    'seg-2-3': ['scene2', 'scene3'],
+    'seg-3-4': ['scene3', 'scene4'],
+    'seg-4-5': ['scene4', 'scene5'],
+    'seg-4-6': ['scene4', 'scene6'],
+};
+
 /* Minimal SVG paths for each direction */
 const chevrons = {
     forward: '<polyline points="8,16 24,6 40,16"/>',
@@ -130,9 +139,7 @@ function renderArrows(id) {
         btn.className = `nav-arrow nav-${dir}`;
         btn.title = c.label;
         btn.innerHTML = `
-            <div class="arrow-btn-inner">
-                <svg viewBox="0 0 48 48">${chevrons[dir]}</svg>
-            </div>
+            <div class="arrow-btn-inner"></div>
             <span class="arrow-tag">${c.label}</span>
         `;
         btn.onclick = () => changeScene(c.target);
@@ -163,23 +170,62 @@ function preloadNextVideos(activeId) {
     });
 }
 
-/* ─── Update minimap ─── */
+/* ─── Update minimap (Nearby Only + Centered) ─── */
 function updateMap(activeId) {
+    const s = scenes[activeId];
+    const neighbors = Object.values(s.connections).map(c => c.target);
+    const visibleNodes = new Set([activeId, ...neighbors]);
+
+    // Centering Logic: Get active node element coordinates
+    const activeNodeEl = document.getElementById('node-' + activeId);
+    if (activeNodeEl) {
+        const dot = activeNodeEl.querySelector('.n-dot');
+        if (dot) {
+            const cx = parseFloat(dot.getAttribute('cx'));
+            const cy = parseFloat(dot.getAttribute('cy'));
+            
+            // Shift viewBox so (cx, cy) becomes the center (80, 80)
+            // viewBox = [min-x, min-y, width, height]
+            const svg = document.getElementById('route-svg');
+            const viewBoxX = cx - 80;
+            const viewBoxY = cy - 80;
+            svg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} 160 160`);
+        }
+    }
+
     /* nodes */
     Object.keys(scenes).forEach(id => {
         const el = document.getElementById('node-' + id);
         if (!el) return;
-        el.classList.remove('active', 'visited');
+        
+        el.classList.remove('active', 'visited', 'm-hidden');
         if (id === activeId)       el.classList.add('active');
         else if (visited.has(id))  el.classList.add('visited');
+        
+        // Hide if not current or neighbor
+        if (!visibleNodes.has(id)) {
+            el.classList.add('m-hidden');
+        }
     });
 
     /* segments */
-    Object.entries(segmentRules).forEach(([segId, activeScenes]) => {
+    Object.entries(segmentMap).forEach(([segId, nodes]) => {
         const el = document.getElementById(segId);
         if (!el) return;
-        el.classList.remove('traveled');
-        if (activeScenes.includes(activeId)) el.classList.add('traveled');
+        
+        el.classList.remove('traveled', 'm-hidden');
+        
+        // Only show segments connected to original current node
+        const isNearby = nodes.includes(activeId);
+        if (!isNearby) {
+            el.classList.add('m-hidden');
+        }
+
+        /* traveled logic */
+        const rules = segmentRules[segId];
+        if (rules && rules.includes(activeId)) {
+            el.classList.add('traveled');
+        }
     });
 }
 
