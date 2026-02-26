@@ -116,6 +116,7 @@ function loadScene(id) {
 
     renderArrows(id);
     updateMap(id);
+    preloadNextVideos(id);
 }
 
 /* ─── Street View arrows ─── */
@@ -136,6 +137,29 @@ function renderArrows(id) {
         `;
         btn.onclick = () => changeScene(c.target);
         wrap.appendChild(btn);
+    });
+}
+
+/* ─── Preload Next Videos (Performance Optimization for Hosting) ─── */
+const preloadedVideos = new Set();
+
+function preloadNextVideos(activeId) {
+    const conn = scenes[activeId].connections;
+    
+    // Looping over all possible next directions
+    Object.values(conn).forEach(c => {
+        const nextScene = scenes[c.target];
+        if (nextScene && !preloadedVideos.has(nextScene.video)) {
+            // Create a link tag to force the browser to preload the video file
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'video';
+            link.href = nextScene.video;
+            document.head.appendChild(link);
+            
+            // Mark as preloaded so we don't insert duplicate tags
+            preloadedVideos.add(nextScene.video);
+        }
     });
 }
 
