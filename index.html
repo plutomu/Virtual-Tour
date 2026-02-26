@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Tour | Dinas Tenaga Kerja Prov. Jateng</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- Video -->
+        <video id="video" autoplay loop muted playsinline></video>
+
+        <!-- Gradient scrim -->
+        <div class="scrim-top"></div>
+        <div class="scrim-bottom"></div>
+
+
+        <!-- TOP-RIGHT: Game-style circular minimap -->
+        <div class="minimap" id="routemap">
+
+            <!-- Compass ring label -->
+            <div class="minimap-compass">
+                <span class="compass-n">U</span>
+                <span class="compass-s">S</span>
+                <span class="compass-w">B</span>
+                <span class="compass-e">T</span>
+            </div>
+
+            <!-- Crosshair center -->
+            <div class="minimap-crosshair"></div>
+
+            <!-- Route SVG inside circle — vertical Y layout -->
+            <svg id="route-svg" viewBox="0 0 160 160" preserveAspectRatio="xMidYMid meet">
+
+                <!-- Subtle background grid -->
+                <line class="grid-line" x1="80" y1="10" x2="80" y2="150" />
+                <line class="grid-line" x1="10" y1="80" x2="150" y2="80" />
+                <circle class="grid-ring" cx="80" cy="80" r="35" />
+                <circle class="grid-ring" cx="80" cy="80" r="62" />
+
+                <!--
+                  Y-shape layout (vertical flipped):
+                Kiri(50,35)    Kanan(110,35)
+                   \          /
+                 Pintu Masuk (80,65) ← junction
+                       |
+                  Layanan (80,90)
+                       |
+                   Pintu (80,115)
+                       |
+                 Halaman (80,140)
+                -->
+
+                <!-- Vertical stem lines (bottom up) -->
+                <line id="seg-1-2" class="seg" x1="80" y1="135" x2="80" y2="120" />
+                <line id="seg-2-3" class="seg" x1="80" y1="110" x2="80" y2="95" />
+                <line id="seg-3-4" class="seg" x1="80" y1="85" x2="80" y2="70" />
+                <!-- Branch arms (upwards) -->
+                <line id="seg-4-5" class="seg" x1="76" y1="61" x2="54" y2="39" />
+                <line id="seg-4-6" class="seg" x1="84" y1="61" x2="106" y2="39" />
+
+                <!-- Node 1: Halaman Depan (bottom) -->
+                <g id="node-scene1" class="rnode" onclick="changeScene('scene1')">
+                    <circle class="n-aura" cx="80" cy="140" r="7" />
+                    <circle class="n-dot" cx="80" cy="140" r="2.5" />
+                    <circle class="n-pulse" cx="80" cy="140" r="2.5" />
+                    <text class="n-label" x="90" y="142" text-anchor="start">Halaman</text>
+                </g>
+
+                <!-- Node 2: Pintu Utama -->
+                <g id="node-scene2" class="rnode" onclick="changeScene('scene2')">
+                    <circle class="n-aura" cx="80" cy="115" r="7" />
+                    <circle class="n-dot" cx="80" cy="115" r="2.5" />
+                    <circle class="n-pulse" cx="80" cy="115" r="2.5" />
+                    <text class="n-label" x="90" y="117" text-anchor="start">Pintu Utama</text>
+                </g>
+
+                <!-- Node 3: Ruang Layanan -->
+                <g id="node-scene3" class="rnode" onclick="changeScene('scene3')">
+                    <circle class="n-aura" cx="80" cy="90" r="7" />
+                    <circle class="n-dot" cx="80" cy="90" r="2.5" />
+                    <circle class="n-pulse" cx="80" cy="90" r="2.5" />
+                    <text class="n-label" x="90" y="92" text-anchor="start">Layanan</text>
+                </g>
+
+                <!-- Node 4: Pintu Masuk Utama (was Teras) — JUNCTION -->
+                <g id="node-scene4" class="rnode junction" onclick="changeScene('scene4')">
+                    <circle class="n-aura" cx="80" cy="65" r="8" />
+                    <circle class="n-dot" cx="80" cy="65" r="3.5" />
+                    <circle class="n-pulse" cx="80" cy="65" r="3.5" />
+                    <text class="n-label" x="90" y="67" text-anchor="start">Pintu Masuk</text>
+                </g>
+
+                <!-- Node 5: Area Kiri (upper-left) -->
+                <g id="node-scene5" class="rnode" onclick="changeScene('scene5')">
+                    <circle class="n-aura" cx="50" cy="35" r="7" />
+                    <circle class="n-dot" cx="50" cy="35" r="2.5" />
+                    <circle class="n-pulse" cx="50" cy="35" r="2.5" />
+                    <text class="n-label" x="50" y="24" text-anchor="middle">Kiri</text>
+                </g>
+
+                <!-- Node 6: Area Kanan (upper-right) -->
+                <g id="node-scene6" class="rnode" onclick="changeScene('scene6')">
+                    <circle class="n-aura" cx="110" cy="35" r="7" />
+                    <circle class="n-dot" cx="110" cy="35" r="2.5" />
+                    <circle class="n-pulse" cx="110" cy="35" r="2.5" />
+                    <text class="n-label" x="110" y="24" text-anchor="middle">Kanan</text>
+                </g>
+
+            </svg>
+
+
+            <!-- Room name label below minimap -->
+            <div class="minimap-roomlabel" id="minimap-room">Halaman Depan</div>
+        </div>
+
+
+        <!-- BOTTOM-LEFT: Room Info only -->
+        <footer class="info-bar">
+            <div class="inst-badge">Dinas Tenaga Kerja Prov. Jateng</div>
+            <h1 id="room-title"></h1>
+            <p id="room-desc"></p>
+        </footer>
+
+        <!-- Navigation arrows -->
+        <div id="nav-arrows"></div>
+
+        <div id="flash"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
