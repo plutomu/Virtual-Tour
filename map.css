@@ -1,12 +1,12 @@
-/* ─── Per-Building Map Component (Round Style) ─── */
+/* ─── Simplified Round Building Map (Single Circle) ─── */
 .building-map-overlay {
     position: absolute;
     top: 24px;
     right: 24px;
     z-index: 50;
-    width: 220px;
-    height: 220px;
-    background: rgba(255, 255, 255, 0.9);
+    width: 180px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
     border: 2px solid #ffffff;
     border-radius: 50%;
@@ -14,11 +14,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     display: none;
+    /* Controlled by JS */
     opacity: 0;
     transform: scale(0.9);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0;
+    /* Clear padding to ensure true center */
 }
 
 .building-map-overlay.show {
@@ -28,30 +31,44 @@
 }
 
 .map-header {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #1a73e8;
-    margin-bottom: 5px;
-    text-align: center;
+    color: rgba(26, 115, 232, 0.6);
+    margin-top: 15px;
+    /* Stay near top */
+    position: absolute;
+    top: 10px;
 }
 
 .map-canvas {
     position: relative;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.02);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Round Nodes for Rooms/Areas */
+/* Centered Text for minimal maps */
+.map-text-centered {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a73e8;
+    text-align: center;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+}
+
+/* Floor/Room Nodes for complex maps */
 .map-room {
     position: absolute;
     background: #fff;
     border: 2px solid #dadce0;
     border-radius: 50%;
-    /* Perfect circle */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,17 +78,12 @@
     color: #5f6368;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    padding: 10px;
 }
 
 .map-room.active {
     background: #1a73e8;
     color: #fff;
     border-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2), 0 5px 15px rgba(26, 115, 232, 0.4);
+    box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
     transform: scale(1.1);
-}
-
-.map-room span {
-    line-height: 1.2;
 }

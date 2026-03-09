@@ -2,21 +2,19 @@ const BuildingMap = {
     // Layout definitions for each building
     layouts: {
         'scene3': {
-            title: 'Ruang Layanan',
-            rooms: [
-                { id: 'layanan-node', label: 'Ruang Layanan', top: '45px', left: '45px', width: '110px', height: '50px', active: true }
-            ]
+            type: 'text-centered',
+            label: 'RUANG<br>LAYANAN'
         },
         'scene5': {
-            title: 'Layout Gedung B',
+            title: 'Gedung B',
             rooms: [
-                { id: 'gedung-b-offices', label: 'Offices B', top: '20px', left: '20px', width: '160px', height: '100px', active: true }
+                { id: 'gedung-b-offices', label: 'Gedung B', top: '45px', left: '45px', width: '70px', height: '70px', active: true }
             ]
         },
         'scene6': {
-            title: 'Layout Gedung A',
+            title: 'Gedung A',
             rooms: [
-                { id: 'gedung-a-hall', label: 'Hall A', top: '15px', left: '20px', width: '160px', height: '110px', active: true }
+                { id: 'gedung-a-hall', label: 'Gedung A', top: '45px', left: '45px', width: '70px', height: '70px', active: true }
             ]
         }
     },
@@ -36,22 +34,30 @@ const BuildingMap = {
             setTimeout(() => overlay.classList.add('show'), 10);
             
             // Build the layout
-            titleEl.textContent = layout.title;
             canvas.innerHTML = '';
             
-            layout.rooms.forEach(room => {
-                const el = document.createElement('div');
-                el.classList.add('map-room');
-                if (room.active) el.classList.add('active');
-                
-                el.style.top = room.top;
-                el.style.left = room.left;
-                el.style.width = room.width;
-                el.style.height = room.height;
-                el.innerHTML = `<span>${room.label}</span>`;
-                
-                canvas.appendChild(el);
-            });
+            if (layout.type === 'text-centered') {
+                titleEl.textContent = ''; // Hide header for text-only
+                const txt = document.createElement('div');
+                txt.classList.add('map-text-centered');
+                txt.innerHTML = layout.label;
+                canvas.appendChild(txt);
+            } else {
+                titleEl.textContent = layout.title;
+                layout.rooms.forEach(room => {
+                    const el = document.createElement('div');
+                    el.classList.add('map-room');
+                    if (room.active) el.classList.add('active');
+                    
+                    el.style.top = room.top;
+                    el.style.left = room.left;
+                    el.style.width = room.width;
+                    el.style.height = room.height;
+                    el.innerHTML = `<span>${room.label}</span>`;
+                    
+                    canvas.appendChild(el);
+                });
+            }
         } else {
             // Hide the map for external/unmapped scenes
             overlay.classList.remove('show');
