@@ -9,109 +9,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Pannellum 360 Viewer -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+    <style>
+        #panorama {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        /* Custom styles to hide pannellum controls if we want a cleaner look */
+        .pnlm-control-bar,
+        .pnlm-panorama-info {
+            display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" href="map.css">
+    <script src="map.js"></script>
 </head>
 
 <body>
 
     <div id="app">
 
-        <!-- Video -->
-        <video id="video" autoplay loop muted playsinline></video>
+        <!-- 360 Viewer Container -->
+        <div id="panorama"></div>
 
-        <!-- Gradient scrim -->
-        <div class="scrim-top"></div>
-        <div class="scrim-bottom"></div>
-
-
-        <!-- TOP-RIGHT: Game-style circular minimap -->
-        <div class="minimap" id="routemap">
-
-            <!-- Compass ring label -->
-            <div class="minimap-compass">
-                <span class="compass-n">U</span>
-                <span class="compass-s">S</span>
-                <span class="compass-w">B</span>
-                <span class="compass-e">T</span>
-            </div>
-
-            <!-- Crosshair center -->
-            <div class="minimap-crosshair"></div>
-
-            <!-- Route SVG inside circle — vertical Y layout -->
-            <svg id="route-svg" viewBox="0 0 160 160" preserveAspectRatio="xMidYMid meet">
-
-                <!-- Subtle background grid -->
-                <circle class="grid-ring" cx="80" cy="80" r="35" />
-                <circle class="grid-ring" cx="80" cy="80" r="62" />
-
-                <!--
-                  Y-shape layout (vertical flipped):
-                Kiri(50,35)    Kanan(110,35)
-                   \          /
-                 Pintu Masuk (80,65) ← junction
-                       |
-                  Layanan (80,90)
-                       |
-                   Pintu (80,115)
-                       |
-                 Halaman (80,140)
-                -->
-
-
-                <!-- Node 1: Halaman Depan (bottom) -->
-                <g id="node-scene1" class="rnode" onclick="changeScene('scene1')">
-                    <circle class="n-aura" cx="80" cy="140" r="7" />
-                    <circle class="n-dot" cx="80" cy="140" r="2.5" />
-                    <circle class="n-pulse" cx="80" cy="140" r="2.5" />
-                    <text class="n-label" x="90" y="142" text-anchor="start">Halaman</text>
-                </g>
-
-                <!-- Node 2: Pintu Utama -->
-                <g id="node-scene2" class="rnode" onclick="changeScene('scene2')">
-                    <circle class="n-aura" cx="80" cy="115" r="7" />
-                    <circle class="n-dot" cx="80" cy="115" r="2.5" />
-                    <circle class="n-pulse" cx="80" cy="115" r="2.5" />
-                    <text class="n-label" x="90" y="117" text-anchor="start">Pintu Utama</text>
-                </g>
-
-                <!-- Node 3: Ruang Layanan -->
-                <g id="node-scene3" class="rnode" onclick="changeScene('scene3')">
-                    <circle class="n-aura" cx="80" cy="90" r="7" />
-                    <circle class="n-dot" cx="80" cy="90" r="2.5" />
-                    <circle class="n-pulse" cx="80" cy="90" r="2.5" />
-                    <text class="n-label" x="90" y="92" text-anchor="start">Layanan</text>
-                </g>
-
-                <!-- Node 4: Pintu Masuk Utama (was Teras) — JUNCTION -->
-                <g id="node-scene4" class="rnode junction" onclick="changeScene('scene4')">
-                    <circle class="n-aura" cx="80" cy="65" r="8" />
-                    <circle class="n-dot" cx="80" cy="65" r="3.5" />
-                    <circle class="n-pulse" cx="80" cy="65" r="3.5" />
-                    <text class="n-label" x="90" y="67" text-anchor="start">Pintu Masuk</text>
-                </g>
-
-                <!-- Node 5: Area Kiri (upper-left) -->
-                <g id="node-scene5" class="rnode" onclick="changeScene('scene5')">
-                    <circle class="n-aura" cx="50" cy="35" r="7" />
-                    <circle class="n-dot" cx="50" cy="35" r="2.5" />
-                    <circle class="n-pulse" cx="50" cy="35" r="2.5" />
-                    <text class="n-label" x="50" y="24" text-anchor="middle">Kiri</text>
-                </g>
-
-                <!-- Node 6: Area Kanan (upper-right) -->
-                <g id="node-scene6" class="rnode" onclick="changeScene('scene6')">
-                    <circle class="n-aura" cx="110" cy="35" r="7" />
-                    <circle class="n-dot" cx="110" cy="35" r="2.5" />
-                    <circle class="n-pulse" cx="110" cy="35" r="2.5" />
-                    <text class="n-label" x="110" y="24" text-anchor="middle">Kanan</text>
-                </g>
-
-            </svg>
-
-
-            <!-- Room name label below minimap -->
-            <div class="minimap-roomlabel" id="minimap-room">Halaman Depan</div>
+        <!-- NEW BUILDING-SPECIFIC MAP -->
+        <div class="building-map-overlay">
+            <div class="map-header">Building Layout</div>
+            <div class="map-canvas"></div>
         </div>
+
 
 
         <!-- BOTTOM-LEFT: Room Info only -->

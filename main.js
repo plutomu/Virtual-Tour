@@ -1,259 +1,236 @@
-/* ─── Scene definitions — Teras is the junction ─── */
+/* ─── Scene definitions ─── */
 const scenes = {
     scene1: {
         title: 'Halaman Depan',
         desc: 'Tampak luar gedung dari sisi jalan utama.',
-        video: 'WhatsApp Video 2026-02-26 at 10.33.50.mp4',
+        image: 'assets/halaman/halaman.jpg',
+        initialYaw: 0,
         connections: {
-            forward: { target: 'scene2', label: 'Pintu Utama' }
+            forward: { target: 'scene2', label: 'Pintu Masuk', yaw: 0, pitch: -10 }
         }
     },
+    nodeMap: {
+        'scene1': 'node-halaman',
+        'scene2': 'node-masuk',
+        'scene3': 'node-pelayanan',
+        'scene5': 'node-pelayanan', // Highlighting through Pelayanan now
+        'scene6': 'node-pelayanan'
+    },
     scene2: {
-        title: 'Pintu Utama',
-        desc: 'Akses masuk utama ke dalam gedung.',
-        video: 'WhatsApp Video 2026-02-26 at 10.47.57.mp4',
+        title: 'Pintu Masuk Utama',
+        desc: 'Akses utama menuju Ruang Layanan.',
+        image: 'assets/pintu_masuk/pintu_masuk.jpg',
+        initialYaw: 0,
         connections: {
-            back:    { target: 'scene1', label: 'Halaman Depan' },
-            forward: { target: 'scene3', label: 'Ruang Layanan' }
+            back:    { target: 'scene1', label: 'Halaman Depan', yaw: 180, pitch: -10 },
+            forward: { target: 'scene3', label: 'Masuk ke Layanan', yaw: 0, pitch: -10 }
         }
     },
     scene3: {
         title: 'Ruang Layanan Publik',
-        desc: 'Area layanan utama gedung.',
-        video: 'WhatsApp Video 2026-02-26 at 10.47.59.mp4',
+        desc: 'Area layanan utama masyarakat. Akses ke Gedung A & B.',
+        image: 'assets/layanan/layanan.jpg',
+        initialYaw: 0,
         connections: {
-            back:    { target: 'scene2', label: 'Pintu Utama' },
-            forward: { target: 'scene4', label: 'Pintu Masuk Utama' }
-        }
-    },
-    scene4: {
-        title: 'Pintu Masuk Utama',
-        desc: 'Pintu masuk utama gedung. Dari sini Anda dapat menuju ke kiri atau ke kanan.',
-        video: 'WhatsApp Video 2026-02-26 at 10.47.59 (1).mp4',
-        connections: {
-            back:  { target: 'scene3', label: 'Ruang Layanan' },
-            left:  { target: 'scene5', label: 'Area Kiri' },
-            right: { target: 'scene6', label: 'Area Kanan' }
+            back:  { target: 'scene2', label: 'Kembali ke Depan', yaw: 90, pitch: -10 },
+            left:  { target: 'scene5', label: 'Ke Gedung B', yaw: -100, pitch: -15 },
+            right: { target: 'scene6', label: 'Ke Gedung A', yaw: -60, pitch: -15 }
         }
     },
     scene5: {
-        title: 'Area Kiri',
-        desc: 'Area di sisi kiri teras.',
-        video: 'WhatsApp Video 2026-02-26 at 14.21.20.mp4',
+        title: 'Area Gedung B',
+        desc: 'Sisi kiri kompleks gedung.',
+        image: 'assets/pintu_masuk/pintu_masuk.jpg',
+        initialYaw: 90,
         connections: {
-            right: { target: 'scene4', label: 'Kembali ke Pintu Masuk' }
+            right: { target: 'scene3', label: 'Kembali ke Layanan', yaw: 90, pitch: -10 }
         }
     },
     scene6: {
-        title: 'Area Kanan',
-        desc: 'Area di sisi kanan teras.',
-        video: 'WhatsApp Video 2026-02-26 at 11.21.52.mp4',
+        title: 'Area Gedung A',
+        desc: 'Area Gedung A yang memanjang.',
+        image: 'assets/gedung_a/gedung_a.jpg',
+        initialYaw: -90,
         connections: {
-            left: { target: 'scene4', label: 'Kembali ke Pintu Masuk' }
+            left: { target: 'scene3', label: 'Kembali ke Layanan', yaw: -90, pitch: -10 }
         }
     }
-};
-
-/* Segments marked "traveled" per active scene */
-const segmentRules = {
-    'seg-1-2': ['scene2','scene3','scene4','scene5','scene6'],
-    'seg-2-3': ['scene3','scene4','scene5','scene6'],
-    'seg-3-4': ['scene4','scene5','scene6'],
-    'seg-4-5': ['scene5'],
-    'seg-4-6': ['scene6'],
-};
-
-/* Maps each segment ID to the two nodes it connects */
-const segmentMap = {
-    'seg-1-2': ['scene1', 'scene2'],
-    'seg-2-3': ['scene2', 'scene3'],
-    'seg-3-4': ['scene3', 'scene4'],
-    'seg-4-5': ['scene4', 'scene5'],
-    'seg-4-6': ['scene4', 'scene6'],
-};
-
-/* Minimal SVG paths for each direction */
-const chevrons = {
-    forward: '<polyline points="8,16 24,6 40,16"/>',
-    back:    '<polyline points="8,8 24,18 40,8"/>',
-    left:    '<polyline points="18,8 8,24 18,40"/>',
-    right:   '<polyline points="30,8 40,24 30,40"/>',
 };
 
 /* ─── State ─── */
 let current  = 'scene1';
 let visited  = new Set(['scene1']);
+let viewer   = null;
+
+/* ─── Preload Buffer ─── */
+const imageCache = {};
+
+function preloadImages() {
+    Object.values(scenes).forEach(s => {
+        if (!imageCache[s.image]) {
+            const img = new Image();
+            img.src = s.image;
+            imageCache[s.image] = img;
+        }
+    });
+}
 
 /* ─── Init ─── */
 function init() {
-    loadScene('scene1');
-    requestAnimationFrame(() => showText());
+    preloadImages();
+    
+    // Recovery state from localStorage
+    const savedScene = localStorage.getItem('vt_last_scene');
+    const savedVisited = localStorage.getItem('vt_visited');
+
+    if (savedScene && scenes[savedScene]) {
+        current = savedScene;
+    }
+    
+    if (savedVisited) {
+        try {
+            visited = new Set(JSON.parse(savedVisited));
+        } catch(e) { visited = new Set(['scene1']); }
+    }
+
+    loadScene(current);
+    setTimeout(() => showText(), 500);
 }
 
 /* ─── Change scene ─── */
 function changeScene(id) {
-    if (id === current) return;
+    if (id === current || !scenes[id]) return;
     const flash = document.getElementById('flash');
-    flash.style.opacity = '1';
+    if (flash) flash.style.opacity = '1';
     hideText();
 
     setTimeout(() => {
         current = id;
         visited.add(id);
+        
+        // Save state for persistence on refresh
+        localStorage.setItem('vt_last_scene', id);
+        localStorage.setItem('vt_visited', JSON.stringify(Array.from(visited)));
+        
         loadScene(id);
-        flash.style.opacity = '0';
-        setTimeout(showText, 280);
-    }, 280);
+    }, 280); // Wait for flash transition to peak
 }
 
 /* ─── Load scene ─── */
 function loadScene(id) {
     const s = scenes[id];
-    const vid = document.getElementById('video');
+    if (!s) return;
 
-    vid.src = s.video;
-    vid.load();
-    vid.play();
-    vid.classList.remove('entering');
-    void vid.offsetWidth;
-    vid.classList.add('entering');
-
-    document.getElementById('room-title').textContent  = s.title;
-    document.getElementById('room-desc').textContent   = s.desc;
-    const roomLabel = document.getElementById('minimap-room');
-    if (roomLabel) roomLabel.textContent = s.title;
-
-    renderArrows(id);
-    updateMap(id);
-    preloadNextVideos(id);
-}
-
-/* ─── Street View arrows ─── */
-function renderArrows(id) {
-    const wrap = document.getElementById('nav-arrows');
-    wrap.innerHTML = '';
-    const conn = scenes[id].connections;
-
-    Object.entries(conn).forEach(([dir, c]) => {
-        const btn = document.createElement('button');
-        btn.className = `nav-arrow nav-${dir}`;
-        btn.title = c.label;
-        btn.innerHTML = `
-            <div class="arrow-btn-inner"></div>
-            <span class="arrow-tag">${c.label}</span>
-        `;
-        btn.onclick = () => changeScene(c.target);
-        wrap.appendChild(btn);
-    });
-}
-
-/* ─── Preload Next Videos (Performance Optimization for Hosting) ─── */
-const preloadedVideos = new Set();
-
-function preloadNextVideos(activeId) {
-    const conn = scenes[activeId].connections;
-    
-    // Looping over all possible next directions
-    Object.values(conn).forEach(c => {
-        const nextScene = scenes[c.target];
-        if (nextScene && !preloadedVideos.has(nextScene.video)) {
-            // Create a link tag to force the browser to preload the video file
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'video';
-            link.href = nextScene.video;
-            document.head.appendChild(link);
-            
-            // Mark as preloaded so we don't insert duplicate tags
-            preloadedVideos.add(nextScene.video);
-        }
-    });
-}
-
-/* ─── Update minimap (Nearby Only + Centered) ─── */
-function updateMap(activeId) {
-    const s = scenes[activeId];
-    const neighbors = Object.values(s.connections).map(c => c.target);
-    const visibleNodes = new Set([activeId, ...neighbors]);
-
-    // Centering Logic: Get active node element coordinates
-    const activeNodeEl = document.getElementById('node-' + activeId);
-    if (activeNodeEl) {
-        const dot = activeNodeEl.querySelector('.n-dot');
-        if (dot) {
-            const cx = parseFloat(dot.getAttribute('cx'));
-            const cy = parseFloat(dot.getAttribute('cy'));
-            
-            // Shift viewBox so (cx, cy) becomes the center (80, 80)
-            // viewBox = [min-x, min-y, width, height]
-            const svg = document.getElementById('route-svg');
-            const viewBoxX = cx - 80;
-            const viewBoxY = cy - 80;
-            svg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} 160 160`);
-        }
+    // Destructive re-initialization is more robust for large/complex transitions
+    const container = document.getElementById('panorama');
+    if (container) {
+        container.innerHTML = ''; // Force clear any stuck Pannellum state
     }
 
-    /* nodes */
-    Object.keys(scenes).forEach(id => {
-        const el = document.getElementById('node-' + id);
-        if (!el) return;
-        
-        el.classList.remove('active', 'visited', 'm-hidden');
-        if (id === activeId)       el.classList.add('active');
-        else if (visited.has(id))  el.classList.add('visited');
-        
-        // Hide if not current or neighbor
-        if (!visibleNodes.has(id)) {
-            el.classList.add('m-hidden');
-        }
-    });
+    try {
+        viewer = pannellum.viewer('panorama', {
+            type: 'equirectangular',
+            panorama: s.image,
+            autoLoad: true,
+            showControls: false,
+            yaw: s.initialYaw || 0,
+            pitch: s.initialPitch || 0,
+            hotSpots: getHotspots(id)
+        });
 
-    /* segments */
-    Object.entries(segmentMap).forEach(([segId, nodes]) => {
-        const el = document.getElementById(segId);
-        if (!el) return;
-        
-        el.classList.remove('traveled', 'm-hidden');
-        
-        // Only show segments connected to original current node
-        const isNearby = nodes.includes(activeId);
-        if (!isNearby) {
-            el.classList.add('m-hidden');
-        }
 
-        /* traveled logic */
-        const rules = segmentRules[segId];
-        if (rules && rules.includes(activeId)) {
-            el.classList.add('traveled');
-        }
+        viewer.on('load', () => {
+            const flash = document.getElementById('flash');
+            if (flash) flash.style.opacity = '0';
+            showText();
+        });
+
+        // Set an emergency timeout if 'load' event doesn't fire fast enough
+        setTimeout(() => {
+            const flash = document.getElementById('flash');
+            if (flash && flash.style.opacity === '1') {
+                flash.style.opacity = '0';
+            }
+        }, 3000);
+
+    } catch (e) {
+        console.error('Pannellum Load Error:', e);
+        const flash = document.getElementById('flash');
+        if (flash) flash.style.opacity = '0';
+    }
+
+    document.getElementById('room-title').textContent = s.title;
+    document.getElementById('room-desc').textContent = s.desc;
+
+    // Trigger per-building map update
+    if (window.BuildingMap) window.BuildingMap.update(id);
+}
+
+function getHotspots(sceneId) {
+    const sceneData = scenes[sceneId];
+    if (!sceneData) return [];
+    const spots = [];
+
+    Object.entries(sceneData.connections).forEach(([dir, c]) => {
+        let hYaw = 0, hPitch = -25; // Lower pitch to stay on the ground
+        if (dir === 'forward') hYaw = 0;
+        else if (dir === 'back') hYaw = 180;
+        else if (dir === 'left') hYaw = -90;
+        else if (dir === 'right') hYaw = 90;
+
+        if (c.yaw !== undefined) hYaw = c.yaw;
+        if (c.pitch !== undefined) hPitch = c.pitch;
+
+        spots.push({
+            pitch: hPitch,
+            yaw: hYaw,
+            cssClass: 'custom-path',
+            createTooltipFunc: hotspotElement,
+            createTooltipArgs: c.label,
+            clickHandlerFunc: (evt, args) => changeScene(args),
+            clickHandlerArgs: c.target
+        });
     });
+    return spots;
+}
+
+// Custom DOM element for hotspots (Normal Arrow)
+function hotspotElement(hotSpotDiv, args) {
+    hotSpotDiv.classList.add('custom-path');
+    
+    // Add the circular house/arrow node
+    const node = document.createElement('div');
+    node.classList.add('custom-path-node');
+    hotSpotDiv.appendChild(node);
+
+    // Label tooltip - relying on style.css for positioning
+    const tooltip = document.createElement('span');
+    tooltip.innerHTML = args;
+    hotSpotDiv.appendChild(tooltip);
 }
 
 /* ─── Text visibility ─── */
 function showText() {
-    document.getElementById('room-title').classList.add('show');
-    document.getElementById('room-desc').classList.add('show');
+    const t = document.getElementById('room-title');
+    const d = document.getElementById('room-desc');
+    if (t) t.classList.add('show');
+    if (d) d.classList.add('show');
 }
 function hideText() {
-    document.getElementById('room-title').classList.remove('show');
-    document.getElementById('room-desc').classList.remove('show');
-}
-
-/* ─── Toggle map (circle ↔ expanded) ─── */
-function toggleMap() {
-    const map  = document.getElementById('routemap');
-    const hint = document.getElementById('toggle-hint');
-    const isOpen = map.classList.toggle('open');
-    if (hint) hint.textContent = isOpen ? '−' : '+';
+    const t = document.getElementById('room-title');
+    const d = document.getElementById('room-desc');
+    if (t) t.classList.remove('show');
+    if (d) d.classList.remove('show');
 }
 
 /* ─── Keyboard ─── */
 document.addEventListener('keydown', e => {
     const conn = scenes[current]?.connections;
     if (!conn) return;
-    const map = { ArrowUp:'forward', ArrowDown:'back', ArrowLeft:'left', ArrowRight:'right' };
-    const dir = map[e.key];
+    const keyMap = { ArrowUp:'forward', ArrowDown:'back', ArrowLeft:'left', ArrowRight:'right' };
+    const dir = keyMap[e.key];
     if (dir && conn[dir]) changeScene(conn[dir].target);
 });
 
 window.onload = init;
+window.changeScene = changeScene; // Ensure accessible globally
