@@ -606,3 +606,65 @@ body {
 .entering {
     filter: blur(0) brightness(0.75);
 }
+
+/* ─────────────────────────────────────────
+   MOBILE ADJUSTMENTS
+ ───────────────────────────────────────── */
+@media screen and (max-width: 768px) {
+    .info-bar {
+        bottom: 30px;
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+
+    .inst-badge {
+        font-size: 11px;
+        margin-bottom: 6px;
+        letter-spacing: 0.1em;
+    }
+
+    #room-title {
+        font-size: 24px;
+        letter-spacing: -0.02em;
+    }
+
+    #room-desc {
+        font-size: 13px;
+        margin-top: 6px;
+        line-height: 1.4;
+        max-width: 90%;
+    }
+
+    /* Small mobile tweaks for map button if needed */
+    .routemap {
+        top: 16px;
+        right: 16px;
+    }
+
+    .routemap.open {
+        width: calc(100% - 32px);
+        height: 180px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .info-bar {
+        bottom: 24px;
+        left: 16px;
+        right: 16px;
+    }
+
+    #room-title {
+        font-size: 20px;
+    }
+
+    #room-desc {
+        font-size: 12px;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}

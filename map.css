@@ -87,3 +87,39 @@
     box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
     transform: scale(1.1);
 }
+
+/* ─── Mobile Adjustments ─── */
+@media screen and (max-width: 768px) {
+    .building-map-overlay {
+        top: 16px;
+        right: 16px;
+        width: 140px;
+        height: 140px;
+    }
+
+    .map-header {
+        font-size: 8px;
+        top: 8px;
+    }
+
+    .map-text-centered {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .building-map-overlay {
+        width: 110px;
+        height: 110px;
+        border-width: 1px;
+    }
+
+    .map-header {
+        display: none;
+        /* Hide header on very small screens to save space */
+    }
+
+    .map-text-centered {
+        font-size: 11px;
+    }
+}
