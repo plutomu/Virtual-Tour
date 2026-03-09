@@ -13,7 +13,7 @@ const scenes = {
         'scene1': 'node-halaman',
         'scene2': 'node-masuk',
         'scene3': 'node-pelayanan',
-        'scene5': 'node-pelayanan', // Highlighting through Pelayanan now
+        'scene5': 'node-pelayanan',
         'scene6': 'node-pelayanan'
     },
     scene2: {
@@ -33,18 +33,14 @@ const scenes = {
         initialYaw: 0,
         connections: {
             back:  { target: 'scene2', label: 'Kembali ke Depan', yaw: 90, pitch: -10 },
-            left:  { target: 'scene5', label: 'Ke Gedung B', yaw: -100, pitch: -15 },
+            left:  { target: 'scene5', label: 'Ke Gedung B (Coming Soon)', yaw: -100, pitch: -15 },
             right: { target: 'scene6', label: 'Ke Gedung A', yaw: -60, pitch: -15 }
         }
     },
     scene5: {
         title: 'Area Gedung B',
-        desc: 'Sisi kiri kompleks gedung.',
-        image: 'assets/pintu_masuk/pintu_masuk.jpg',
-        initialYaw: 90,
-        connections: {
-            right: { target: 'scene3', label: 'Kembali ke Layanan', yaw: 90, pitch: -10 }
-        }
+        desc: 'Gedung dalam pengembangan.',
+        disabled: true // Prevents clicking
     },
     scene6: {
         title: 'Area Gedung A',
@@ -52,8 +48,19 @@ const scenes = {
         image: 'assets/gedung_a/gedung_a.jpg',
         initialYaw: -90,
         connections: {
-            left: { target: 'scene3', label: 'Kembali ke Layanan', yaw: -90, pitch: -10 }
+            back: { target: 'scene3', label: 'Kembali ke Layanan', yaw: -5, pitch: -10 },
+            left: { target: 'scene_c', label: 'Ke Gedung C (Coming Soon)', yaw: -170, pitch: -5 }
         }
+    },
+    scene_c: {
+        title: 'Area Gedung C',
+        desc: 'Gedung dalam pengembangan.',
+        disabled: true // Prevents clicking
+    },
+    scene_mushola: {
+        title: 'Mushola',
+        desc: 'Area ibadah dalam pengembangan.',
+        disabled: true // Prevents clicking
     }
 };
 
@@ -100,6 +107,14 @@ function init() {
 /* ─── Change scene ─── */
 function changeScene(id) {
     if (id === current || !scenes[id]) return;
+    
+    // Check if the scene actually has a valid image file assigned
+    const targetScene = scenes[id];
+    if (!targetScene.image || targetScene.image.includes('placeholder')) {
+        console.warn(`Scene ${id} skipped: No image asset found.`);
+        return; // Do nothing if file is missing
+    }
+
     const flash = document.getElementById('flash');
     if (flash) flash.style.opacity = '1';
     hideText();
@@ -111,6 +126,10 @@ function changeScene(id) {
         // Save state for persistence on refresh
         localStorage.setItem('vt_last_scene', id);
         localStorage.setItem('vt_visited', JSON.stringify(Array.from(visited)));
+        
+        // Reset orientation on scene change so target scene defaults work
+        localStorage.removeItem('vt_last_yaw');
+        localStorage.removeItem('vt_last_pitch');
         
         loadScene(id);
     }, 280); // Wait for flash transition to peak
@@ -127,15 +146,25 @@ function loadScene(id) {
         container.innerHTML = ''; // Force clear any stuck Pannellum state
     }
 
+    // Recovery orientation from localStorage
+    const savedYaw = localStorage.getItem('vt_last_yaw');
+    const savedPitch = localStorage.getItem('vt_last_pitch');
+
     try {
         viewer = pannellum.viewer('panorama', {
             type: 'equirectangular',
             panorama: s.image,
             autoLoad: true,
             showControls: false,
-            yaw: s.initialYaw || 0,
-            pitch: s.initialPitch || 0,
+            yaw: (savedYaw !== null) ? parseFloat(savedYaw) : (s.initialYaw || 0),
+            pitch: (savedPitch !== null) ? parseFloat(savedPitch) : (s.initialPitch || 0),
             hotSpots: getHotspots(id)
+        });
+
+        // Save orientation whenever it changes
+        viewer.on('viewchange', () => {
+            localStorage.setItem('vt_last_yaw', viewer.getYaw());
+            localStorage.setItem('vt_last_pitch', viewer.getPitch());
         });
 
 
@@ -181,13 +210,16 @@ function getHotspots(sceneId) {
         if (c.yaw !== undefined) hYaw = c.yaw;
         if (c.pitch !== undefined) hPitch = c.pitch;
 
+        const targetData = scenes[c.target];
+        const isDisabled = targetData && targetData.disabled;
+
         spots.push({
             pitch: hPitch,
             yaw: hYaw,
-            cssClass: 'custom-path',
+            cssClass: isDisabled ? 'disabled-path' : 'custom-path',
             createTooltipFunc: hotspotElement,
             createTooltipArgs: c.label,
-            clickHandlerFunc: (evt, args) => changeScene(args),
+            clickHandlerFunc: isDisabled ? null : (evt, args) => changeScene(args),
             clickHandlerArgs: c.target
         });
     });
@@ -196,7 +228,7 @@ function getHotspots(sceneId) {
 
 // Custom DOM element for hotspots (Normal Arrow)
 function hotspotElement(hotSpotDiv, args) {
-    hotSpotDiv.classList.add('custom-path');
+    // We let Pannellum handle the cssClass (custom-path or disabled-path)
     
     // Add the circular house/arrow node
     const node = document.createElement('div');

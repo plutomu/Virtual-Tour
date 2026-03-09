@@ -6,16 +6,12 @@ const BuildingMap = {
             label: 'RUANG<br>LAYANAN'
         },
         'scene5': {
-            title: 'Gedung B',
-            rooms: [
-                { id: 'gedung-b-offices', label: 'Gedung B', top: '45px', left: '45px', width: '70px', height: '70px', active: true }
-            ]
+            type: 'text-centered',
+            label: '' // Blank for now
         },
         'scene6': {
-            title: 'Gedung A',
-            rooms: [
-                { id: 'gedung-a-hall', label: 'Gedung A', top: '45px', left: '45px', width: '70px', height: '70px', active: true }
-            ]
+            type: 'text-centered',
+            label: 'GEDUNG<br>A'
         }
     },
 
@@ -37,12 +33,13 @@ const BuildingMap = {
             canvas.innerHTML = '';
             
             if (layout.type === 'text-centered') {
-                titleEl.textContent = ''; // Hide header for text-only
+                titleEl.style.display = 'none'; // Completely hide header
                 const txt = document.createElement('div');
                 txt.classList.add('map-text-centered');
                 txt.innerHTML = layout.label;
                 canvas.appendChild(txt);
             } else {
+                titleEl.style.display = 'block';
                 titleEl.textContent = layout.title;
                 layout.rooms.forEach(room => {
                     const el = document.createElement('div');

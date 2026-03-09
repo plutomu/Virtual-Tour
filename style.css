@@ -133,6 +133,29 @@ body {
     border-bottom-color: #fff;
 }
 
+/* Disabled/Coming Soon Nodes */
+.pnlm-hotspot-base.disabled-path {
+    opacity: 0.6 !important;
+    cursor: default !important;
+}
+
+.pnlm-hotspot-base.disabled-path .custom-path-node {
+    background: rgba(150, 150, 150, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+    cursor: default !important;
+}
+
+.pnlm-hotspot-base.disabled-path .custom-path-node::after {
+    border-bottom-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.pnlm-hotspot-base.disabled-path:hover .custom-path-node {
+    transform: none !important;
+    background: rgba(150, 150, 150, 0.3) !important;
+    box-shadow: none !important;
+}
+
 /* Tooltip style - White text forced BELOW node */
 .pnlm-hotspot-base.custom-path span {
     background: none !important;
