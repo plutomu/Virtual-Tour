@@ -1,4 +1,12 @@
-/* ─── Scene definitions ─── */
+/* ─── State ─── */
+const nodeMap = {
+    'scene1': 'node-halaman',
+    'scene2': 'node-masuk',
+    'scene3': 'node-pelayanan',
+    'scene5': 'node-pelayanan',
+    'scene6': 'node-pelayanan'
+};
+
 const scenes = {
     scene1: {
         title: 'Halaman Depan',
@@ -8,13 +16,6 @@ const scenes = {
         connections: {
             forward: { target: 'scene2', label: 'Pintu Masuk', yaw: 0, pitch: -10 }
         }
-    },
-    nodeMap: {
-        'scene1': 'node-halaman',
-        'scene2': 'node-masuk',
-        'scene3': 'node-pelayanan',
-        'scene5': 'node-pelayanan',
-        'scene6': 'node-pelayanan'
     },
     scene2: {
         title: 'Pintu Masuk Utama',
@@ -40,7 +41,7 @@ const scenes = {
     scene5: {
         title: 'Area Gedung B',
         desc: 'Gedung dalam pengembangan.',
-        disabled: true // Prevents clicking
+        disabled: true
     },
     scene6: {
         title: 'Area Gedung A',
@@ -55,16 +56,15 @@ const scenes = {
     scene_c: {
         title: 'Area Gedung C',
         desc: 'Gedung dalam pengembangan.',
-        disabled: true // Prevents clicking
+        disabled: true
     },
     scene_mushola: {
         title: 'Mushola',
         desc: 'Area ibadah dalam pengembangan.',
-        disabled: true // Prevents clicking
+        disabled: true
     }
 };
 
-/* ─── State ─── */
 let current  = 'scene1';
 let visited  = new Set(['scene1']);
 let viewer   = null;
@@ -74,7 +74,8 @@ const imageCache = {};
 
 function preloadImages() {
     Object.values(scenes).forEach(s => {
-        if (!imageCache[s.image]) {
+        // Fix: check if s is a valid scene object with an image asset
+        if (s && s.image && !imageCache[s.image]) {
             const img = new Image();
             img.src = s.image;
             imageCache[s.image] = img;
@@ -84,14 +85,33 @@ function preloadImages() {
 
 /* ─── Init ─── */
 function init() {
+    // Check for Pannellum library availability
+    if (typeof pannellum === 'undefined') {
+        const flash = document.getElementById('flash');
+        if (flash) {
+            flash.style.opacity = '1';
+            flash.innerHTML = `
+                <div style="color: white; text-align: center; padding: 20px;">
+                    <p>Gagal mengunduh mesin Virtual Tour (Pannellum).</p>
+                    <p style="font-size: 12px; opacity: 0.7;">Periksa koneksi internet Anda atau coba muat ulang.</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">Muat Ulang</button>
+                </div>
+            `;
+        }
+        return;
+    }
+
     preloadImages();
     
     // Recovery state from localStorage
     const savedScene = localStorage.getItem('vt_last_scene');
     const savedVisited = localStorage.getItem('vt_visited');
 
-    if (savedScene && scenes[savedScene]) {
+    // Fix: ensure the saved scene is actually visitable (has an image)
+    if (savedScene && scenes[savedScene] && scenes[savedScene].image) {
         current = savedScene;
+    } else {
+        current = 'scene1'; // Fallback to entrance if saved scene is invalid
     }
     
     if (savedVisited) {
@@ -142,8 +162,12 @@ function loadScene(id) {
 
     // Destructive re-initialization is more robust for large/complex transitions
     const container = document.getElementById('panorama');
+    const flash = document.getElementById('flash');
     if (container) {
-        container.innerHTML = ''; // Force clear any stuck Pannellum state
+        container.innerHTML = ''; // Force clear
+    }
+    if (flash) {
+        flash.innerHTML = ''; // Reset error messages or other content
     }
 
     // Recovery orientation from localStorage
@@ -170,22 +194,33 @@ function loadScene(id) {
 
         viewer.on('load', () => {
             const flash = document.getElementById('flash');
-            if (flash) flash.style.opacity = '0';
-            showText();
+            if (flash && flash.innerHTML === '') {
+                flash.style.opacity = '0';
+                showText();
+            }
         });
 
         // Set an emergency timeout if 'load' event doesn't fire fast enough
         setTimeout(() => {
             const flash = document.getElementById('flash');
-            if (flash && flash.style.opacity === '1') {
+            if (flash && flash.style.opacity === '1' && flash.innerHTML === '') {
                 flash.style.opacity = '0';
             }
-        }, 3000);
+        }, 5000); // 5 seconds for slow panoramas
 
     } catch (e) {
         console.error('Pannellum Load Error:', e);
         const flash = document.getElementById('flash');
-        if (flash) flash.style.opacity = '0';
+        if (flash) {
+            flash.style.opacity = '1';
+            flash.innerHTML = `
+                <div style="color: white; text-align: center; padding: 20px;">
+                    <p>Gagal memuat panorama.</p>
+                    <p style="font-size: 12px; opacity: 0.7;">Pastikan Anda menggunakan web server (Localhost) dan aset gambar tersedia.</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">Muat Ulang</button>
+                </div>
+            `;
+        }
     }
 
     document.getElementById('room-title').textContent = s.title;
