@@ -20,25 +20,33 @@ const upload = multer({ storage: storage });
 // Inisialisasi Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-// API Endpoints (Sama dengan versi Vercel)
+// API Endpoints
 app.get('/api/scenes', async (req, res) => {
     try {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            throw new Error("Kunci Supabase belum diisi di file .env lokal!");
+        }
         const { data, error } = await supabase.from('virtual_tour').select('*').order('created_at', { ascending: true });
         if (error) throw error;
         res.json(data || []);
     } catch (e) {
+        console.error('SERVER ERROR:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
 
 app.post('/api/scenes', async (req, res) => {
     try {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+            throw new Error("Kunci Supabase belum diisi di file .env lokal!");
+        }
         const scenes = req.body;
         await supabase.from('virtual_tour').delete().neq('id', '_dummy_');
         const { error } = await supabase.from('virtual_tour').insert(scenes);
         if (error) throw error;
         res.json({ success: true });
     } catch (e) {
+        console.error('SERVER ERROR:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
