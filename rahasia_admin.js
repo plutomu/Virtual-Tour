@@ -158,14 +158,36 @@ function initGraph() {
         nodes: { 
             size: 30, 
             borderWidth: 4, 
-            font: { face: 'Outfit', size: 12, color: '#475569' } 
+            font: { face: 'Inter', size: 12, color: '#444' } 
         },
-        edges: { width: 2, smooth: { type: 'curvedCW', roundness: 0.2 } },
-        physics: { enabled: true, barnesHut: { gravitationalConstant: -2000, centralGravity: 0.3, springLength: 150 } },
+        edges: { 
+            width: 2, 
+            smooth: { type: 'curvedCW', roundness: 0.2 },
+            color: { inherit: 'from' }
+        },
+        physics: { 
+            enabled: true,
+            stabilization: {
+                enabled: true,
+                iterations: 1000,
+                updateInterval: 50
+            },
+            barnesHut: { 
+                gravitationalConstant: -2000, 
+                centralGravity: 0.3, 
+                springLength: 150 
+            } 
+        },
         interaction: { hover: true, tooltipDelay: 200 }
     };
 
     network = new vis.Network(container, data, options);
+
+    // Antigravity: Matikan fisika setelah stabil agar tidak leg
+    network.once("stabilizationIterationsDone", function () {
+        network.setOptions({ physics: false });
+        console.log('✅ Peta dikunci (Mode Performa)');
+    });
 
     // Logika Trigger Edit (Instan & Akurat untuk Desktop & Mobile)
     const handleNodeSelection = (params) => {
