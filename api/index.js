@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import sharp from 'sharp';
 
 const app = express();
 app.use(cors());
@@ -11,12 +10,12 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// PENGAMAN: Fungsi untuk inisialisasi Supabase secara aman
+// Inisialisasi Supabase secara aman (Hanya dipanggil saat dibutuhkan)
 const getSupabase = () => {
     const url = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_ANON_KEY;
     if (!url || !key) {
-        throw new Error("Kunci SUPABASE_URL atau SUPABASE_ANON_KEY tidak ditemukan di Environment Variables Vercel!");
+        throw new Error("DATABASE_NOT_CONFIGURED: Kunci Supabase tidak ditemukan di Vercel Environment Variables.");
     }
     return createClient(url, key);
 };
@@ -30,15 +29,16 @@ app.get('/api/scenes', async (req, res) => {
         res.json(data || []);
     } catch (e) {
         console.error('API Error:', e.message);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: e.message, code: 'SUPABASE_ERROR' });
     }
 });
 
-// POST Data Scenes
+// POST Data Scenes (Save All)
 app.post('/api/scenes', async (req, res) => {
     try {
         const supabase = getSupabase();
         const scenes = req.body;
+        // Hapus data lama dan masukkan yang baru (Sync)
         await supabase.from('virtual_tour').delete().neq('id', '_dummy_');
         const { error } = await supabase.from('virtual_tour').insert(scenes);
         if (error) throw error;
@@ -48,24 +48,19 @@ app.post('/api/scenes', async (req, res) => {
     }
 });
 
-// API Upload ke Supabase Storage (Kuat & Tahan Crash)
+// API Upload Langsung ke Supabase Storage (Tanpa Sharp agar Ringan)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
         const supabase = getSupabase();
         if (!req.file) return res.status(400).send('No file uploaded.');
 
         const file = req.file;
-        const fileName = `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "")}.jpg`;
-        
-        // Kompresi via Sharp
-        const compressedBuffer = await sharp(file.buffer)
-            .resize(4096, 2048, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 80, progressive: true })
-            .toBuffer();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
 
+        // Langsung upload ke storage karena sudah dikompres di browser
         const { data, error } = await supabase.storage
             .from('panoramas')
-            .upload(fileName, compressedBuffer, {
+            .upload(fileName, file.buffer, {
                 contentType: 'image/jpeg',
                 upsert: true
             });
