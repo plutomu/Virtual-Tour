@@ -227,10 +227,10 @@ window.saveScene = async function() {
         if (window.lucide) lucide.createIcons();
 
         let imagePath = document.getElementById('scene-image-path').value;
-        const imageInput = document.getElementById('scene-image-input');
+        const imageInput = document.getElementById('scene-image-file');
 
         // 1. UPLOAD GAMBAR KE SUPABASE (Jika ada file baru)
-        if (imageInput.files && imageInput.files[0]) {
+        if (imageInput && imageInput.files && imageInput.files[0]) {
             const formData = new FormData();
             formData.append('image', imageInput.files[0]);
 
