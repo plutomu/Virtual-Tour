@@ -409,7 +409,6 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* centered when circle */
     gap: 0;
     padding: 0;
     width: 44px;

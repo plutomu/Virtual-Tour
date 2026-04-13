@@ -637,6 +637,17 @@ window.previewChangeScene = (id) => {
 
     if (quickPreviewViewer) quickPreviewViewer.destroy();
     
+    // Antigravity: Show Loader in Preview
+    const container = document.getElementById('preview-panorama');
+    if (container) {
+        container.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p class="loading-text" style="font-size: 8px">Memuat Preview...</p>
+            </div>
+        `;
+    }
+    
     const h = [];
     Object.entries(s.connections || {}).forEach(([dir, c]) => h.push({
         pitch: c.pitch, yaw: c.yaw, createTooltipFunc: renderH, createTooltipArgs: c.label,

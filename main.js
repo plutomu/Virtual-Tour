@@ -193,7 +193,14 @@ function loadScene(id) {
         container.innerHTML = ''; // Force clear
     }
     if (flash) {
-        flash.innerHTML = ''; // Reset error messages or other content
+        // Tampilkan Spinner di dalam flash (Loader Premium)
+        flash.style.opacity = '1';
+        flash.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p class="loading-text">Menyiapkan Ruangan...</p>
+            </div>
+        `;
     }
 
     // Recovery orientation from localStorage
