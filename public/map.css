@@ -1,0 +1,125 @@
+/* ─── Simplified Round Building Map (Single Circle) ─── */
+.building-map-overlay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 50;
+    width: 180px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: none;
+    /* Controlled by JS */
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0;
+    /* Clear padding to ensure true center */
+}
+
+.building-map-overlay.show {
+    display: flex;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.map-header {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(26, 115, 232, 0.6);
+    margin-top: 15px;
+    /* Stay near top */
+    position: absolute;
+    top: 10px;
+}
+
+.map-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Centered Text for minimal maps */
+.map-text-centered {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a73e8;
+    text-align: center;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+}
+
+/* Floor/Room Nodes for complex maps */
+.map-room {
+    position: absolute;
+    background: #fff;
+    border: 2px solid #dadce0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #5f6368;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.map-room.active {
+    background: #1a73e8;
+    color: #fff;
+    border-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(26, 115, 232, 0.4);
+    transform: scale(1.1);
+}
+
+/* ─── Mobile Adjustments ─── */
+@media screen and (max-width: 768px) {
+    .building-map-overlay {
+        top: 16px;
+        right: 16px;
+        width: 140px;
+        height: 140px;
+    }
+
+    .map-header {
+        font-size: 8px;
+        top: 8px;
+    }
+
+    .map-text-centered {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .building-map-overlay {
+        width: 110px;
+        height: 110px;
+        border-width: 1px;
+    }
+
+    .map-header {
+        display: none;
+        /* Hide header on very small screens to save space */
+    }
+
+    .map-text-centered {
+        font-size: 11px;
+    }
+}
