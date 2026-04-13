@@ -520,4 +520,9 @@ window.filterScenes = (query) => {
     });
 };
 
-window.onload = loadScenes;
+window.onload = () => {
+    loadScenes();
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+};

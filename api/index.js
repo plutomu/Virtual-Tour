@@ -14,7 +14,20 @@ const upload = multer({ storage: storage });
 // Inisialisasi Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("⚠️ SUPABASE_URL atau SUPABASE_ANON_KEY belum diatur di Vercel!");
+}
+
+const supabase = (supabaseUrl && supabaseAnonKey) 
+    ? createClient(supabaseUrl, supabaseAnonKey) 
+    : null;
+
+// Middleware cek koneksi database
+const checkDb = (req, res, next) => {
+    if (!supabase) return res.status(500).json({ error: "Database belum terkonfigurasi. Pastikan Environment Variables di Vercel sudah diisi." });
+    next();
+};
 
 // GET Data Scenes
 app.get('/api/scenes', async (req, res) => {
