@@ -6,25 +6,19 @@
 
     /* Main Info Bar (Keterangan Tempat) - Floating Glassmorphic Card */
     .info-bar {
-        bottom: 24px;
-        left: 16px;
-        right: 16px;
-        max-width: none;
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        padding: 20px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow:
-            0 10px 40px rgba(0, 0, 0, 0.3),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-        transform: translateY(10px);
-        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    .info-bar.show {
-        transform: translateY(0);
+        bottom: 24px !important;
+        left: 16px !important;
+        right: 16px !important;
+        max-width: none !important;
+        background: #ffffff !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        padding: 20px !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+        transform: translateY(0) !important;
+        transition: all 0.5s ease !important;
     }
 
     .inst-badge {
@@ -42,23 +36,24 @@
     }
 
     #room-title {
-        font-size: 24px;
-        letter-spacing: -0.01em;
-        line-height: 1.2;
-        margin-top: 4px;
-        text-shadow: none;
-        background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: 24px !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1.2 !important;
+        margin-top: 4px !important;
+        text-shadow: none !important;
+        color: #000000 !important;
+        background: none !important;
+        -webkit-background-clip: initial !important;
+        background-clip: initial !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 
     #room-desc {
-        font-size: 13px;
-        margin-top: 8px;
-        line-height: 1.5;
-        color: rgba(255, 255, 255, 0.65);
-        text-shadow: none;
+        font-size: 13px !important;
+        margin-top: 8px !important;
+        line-height: 1.5 !important;
+        color: #333333 !important;
+        text-shadow: none !important;
         max-width: 100%;
         display: -webkit-box;
         -webkit-line-clamp: 2;

@@ -205,16 +205,19 @@ function loadScene(id) {
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center w-full h-full bg-[#050510] relative overflow-hidden">
                 <!-- Advanced Background Layer -->
-                <div class="absolute inset-0 bg-cover bg-center scale-110 blur-sm opacity-30" style="background-image: url('https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=2000')"></div>
-                <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/40 via-black/80 to-black"></div>
-                
-                <div class="relative z-10 flex flex-col items-center p-8 lg:p-16 text-center">
-                    <div class="bg-black/40 backdrop-blur-2xl p-10 lg:p-16 rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-                        <div class="w-24 h-24 bg-indigo-600/20 rounded-[2.5rem] border border-indigo-500/30 flex items-center justify-center mb-8 mx-auto animate-pulse shadow-[0_0_30px_rgba(79,70,229,0.4)]">
-                            <i data-lucide="camera-off" class="w-10 h-10 text-indigo-400"></i>
-                        </div>
-                        <h2 class="text-white text-3xl lg:text-5xl font-black uppercase tracking-[0.4em] mb-4 drop-shadow-2xl">Coming Soon</h2>
-                        <p class="text-indigo-200/60 text-[10px] lg:text-[12px] font-black uppercase tracking-[0.3em] max-w-sm leading-loose mx-auto">Ruangan ini sedang dalam proses pemotretan 360° oleh tim teknis kami.</p>
+            <div class="absolute inset-0 flex items-center justify-center bg-slate-50">
+                <div class="absolute inset-0 bg-white/20 backdrop-blur-3xl"></div>
+                <div class="relative z-10 p-10 lg:p-16 bg-white border border-slate-200 shadow-[0_20px_80px_rgba(0,0,0,0.08)] rounded-[3rem] text-center max-w-sm lg:max-w-md transform transition-all duration-700 hover:scale-[1.02]">
+                    <div class="w-20 h-20 lg:w-24 lg:h-24 bg-indigo-600/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-indigo-600/10">
+                        <i data-lucide="camera-off" class="w-10 h-10 lg:w-12 lg:h-12 text-indigo-600 opacity-80"></i>
+                    </div>
+                    <h2 class="text-3xl lg:text-4xl font-black text-slate-900 mb-4 tracking-tighter">Coming Soon</h2>
+                    <p class="text-slate-500 font-bold text-sm lg:text-base leading-relaxed mb-8 px-4 opacity-70">
+                        Ruangan ini sedang dalam tahap pengambilan foto 360°. Segera kembali untuk melihat hasilnya.
+                    </p>
+                    <div class="inline-flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-400 rounded-full border border-slate-100">
+                        <div class="w-2 h-2 bg-slate-300 rounded-full animate-pulse"></div>
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em]">Seksi Dokumentasi</span>
                     </div>
                 </div>
             </div>

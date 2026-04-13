@@ -372,13 +372,53 @@ window.deleteScene = async () => {
 };
 
 window.addFacility = () => {
-    const s = scenes.find(x => x.id === editingId);
-    if (!s) return;
-    const label = prompt('Nama Fasilitas:', 'Meja');
-    if (!label) return;
-    if (!s.facilities) s.facilities = [];
-    s.facilities.push({ label, yaw: 0, pitch: 0 });
-    renderFacilityList(s);
+    window.openCustomPrompt("Tambah Fasilitas", (label) => {
+        const s = scenes.find(x => x.id === editingId);
+        if (!s.facilities) s.facilities = [];
+        s.facilities.push({ label, yaw: 0, pitch: 0 });
+        renderFacilityList(s);
+    });
+};
+
+window.openCustomPrompt = (title, onConfirm) => {
+    const modal = document.getElementById('custom-prompt-modal');
+    const content = document.getElementById('custom-prompt-content');
+    const input = document.getElementById('custom-prompt-input');
+    const btn = document.getElementById('custom-prompt-confirm');
+    const titleEl = document.getElementById('prompt-modal-title');
+
+    if (!modal) return;
+
+    titleEl.innerText = title;
+    input.value = "";
+    modal.classList.remove('hidden');
+    
+    // Set confirm callback
+    btn.onclick = () => {
+        const val = input.value.trim();
+        if (val) {
+            onConfirm(val);
+            window.closeCustomPrompt();
+        }
+    };
+
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+        input.focus();
+    }, 10);
+};
+
+window.closeCustomPrompt = () => {
+    const modal = document.getElementById('custom-prompt-modal');
+    const content = document.getElementById('custom-prompt-content');
+    if (!modal) return;
+
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
 };
 
 function renderFacilityList(s) {
