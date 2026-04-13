@@ -302,21 +302,28 @@ window.removeConnection = (id, dir) => {
     }
 };
 
-/* 360 Picker & Preview Logic */
 let pickingType = 'connection';
 let pickingDir = '';
 let pickingIdx = -1;
+let pickingYaw = 0;
+let pickingPitch = 0;
 
 window.startVisualConnect = (id, typeOrDir, idx) => {
     const s = scenes.find(x => x.id === id);
     if (!s) return;
     
+    // Default coords (di tengah jika belum ada)
+    pickingYaw = 0;
+    pickingPitch = 0;
+
     if (idx !== undefined) {
         pickingType = 'facility';
         pickingIdx = idx;
+        const f = s.facilities[idx];
+        if (f) { pickingYaw = f.yaw || 0; pickingPitch = f.pitch || 0; }
     } else {
         pickingType = 'connection';
-        pickingDir = typeOrDir || prompt('Arah (Forward, Back, Left, Right)?', 'forward').toLowerCase();
+        pickingDir = typeOrDir || prompt('Arah (Depan, Belakang, Kiri, Kanan)?', 'forward').toLowerCase();
         if (!pickingDir) return;
         
         if (!s.connections) s.connections = {};
@@ -325,6 +332,10 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
             const target = prompt(`Target ID (${list}):`);
             if (!target) return;
             s.connections[pickingDir] = { target, label: target, pitch: 0, yaw: 0 };
+        } else {
+            const c = s.connections[pickingDir];
+            pickingYaw = c.yaw || 0;
+            pickingPitch = c.pitch || 0;
         }
     }
 
@@ -332,38 +343,94 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
     tool.classList.remove('hidden');
     tool.innerHTML = `
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Pin Location Picker</span>
-            <button onclick="window.hidePicker()" class="text-white/40 hover:text-rose-400"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                Penentuan Lokasi Titik
+            </span>
+            <button onclick="window.hidePicker()" class="text-slate-400 hover:text-rose-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
         </div>
-        <div class="relative w-full h-48 bg-slate-100 rounded-2xl overflow-hidden mb-3 border border-slate-200">
+        <div class="relative w-full h-64 bg-slate-100 rounded-3xl overflow-hidden mb-4 border border-slate-200 shadow-inner group">
             <div id="picker-panorama" class="w-full h-full"></div>
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div class="w-8 h-8 flex items-center justify-center opacity-90">
-                    <div class="absolute w-px h-8 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
-                    <div class="absolute w-8 h-px bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+            
+            <!-- Bidikan Tengah (Guide Only) -->
+            <div id="picker-guide" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30 transition-opacity group-hover:opacity-50">
+                <div class="w-10 h-10 flex items-center justify-center">
+                    <div class="absolute w-px h-6 bg-slate-400"></div>
+                    <div class="absolute w-6 h-px bg-slate-400"></div>
                 </div>
             </div>
+
+            <!-- Pesan Bantuan (Hanya muncul jika belum diklik) -->
+            <div id="click-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-4 py-2 rounded-full uppercase tracking-tighter animate-bounce">
+                    Klik di mana saja pada foto
+                </div>
+            </div>
+
+            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 shadow-sm pointer-events-none">
+                <p class="text-[9px] font-bold text-slate-500 uppercase">Mode: ${pickingType === 'facility' ? 'Fasilitas' : 'Rute'}</p>
+            </div>
         </div>
-        <button onclick="window.confirmPicker()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-red-900/20">Confirm Marker Position</button>
+        <button onclick="window.confirmPicker()" class="w-full py-4 bg-indigo-600 hover:bg-black text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-indigo-100">Simpan Posisi Titik</button>
     `;
 
     if (pickerViewer) pickerViewer.destroy();
-    pickerViewer = pannellum.viewer('picker-panorama', { type: 'equirectangular', panorama: s.image, autoLoad: true, showControls: false });
+    
+    // Inisialisasi viewer
+    pickerViewer = pannellum.viewer('picker-panorama', { 
+        type: 'equirectangular', 
+        panorama: s.image, 
+        autoLoad: true, 
+        showControls: false,
+        yaw: pickingYaw,
+        pitch: pickingPitch,
+        hotSpots: (pickingYaw !== 0 || pickingPitch !== 0) ? [{
+            id: 'temp-marker',
+            pitch: pickingPitch,
+            yaw: pickingYaw,
+            cssClass: 'picker-red-dot'
+        }] : []
+    });
+
+    // Sembunyikan pesan bantuan jika titik sudah ada
+    if (pickingYaw !== 0 || pickingPitch !== 0) {
+        const hint = document.getElementById('click-hint');
+        if (hint) hint.classList.add('hidden');
+    }
+
+    pickerViewer.on('mousedown', (event) => {
+        const coords = pickerViewer.mouseEventToCoords(event);
+        pickingPitch = coords[0];
+        pickingYaw = coords[1];
+        
+        // Sembunyikan bantuan & guide setelah klik pertama
+        const hint = document.getElementById('click-hint');
+        const guide = document.getElementById('picker-guide');
+        if (hint) hint.classList.add('hidden');
+        if (guide) guide.classList.add('opacity-0');
+        
+        pickerViewer.removeHotSpot('temp-marker');
+        pickerViewer.addHotSpot({
+            id: 'temp-marker',
+            pitch: pickingPitch,
+            yaw: pickingYaw,
+            cssClass: 'picker-red-dot'
+        });
+    });
+
     if (window.lucide) window.lucide.createIcons();
 };
 
 window.confirmPicker = () => {
     const s = scenes.find(x => x.id === editingId);
-    const yaw = pickerViewer.getYaw();
-    const pitch = pickerViewer.getPitch();
-
     if (pickingType === 'connection') {
-        s.connections[pickingDir].yaw = yaw;
-        s.connections[pickingDir].pitch = pitch;
+        s.connections[pickingDir].yaw = pickingYaw;
+        s.connections[pickingDir].pitch = pickingPitch;
         renderConnectionList(s);
     } else {
-        s.facilities[pickingIdx].yaw = yaw;
-        s.facilities[pickingIdx].pitch = pitch;
+        s.facilities[pickingIdx].yaw = pickingYaw;
+        s.facilities[pickingIdx].pitch = pickingPitch;
+        renderFacilityList(s);
     }
     window.hidePicker();
 };
