@@ -12,30 +12,84 @@ let current  = 'scene1';
 let visited  = new Set(['scene1']);
 let viewer   = null;
 
+/* ─── IndexedDB Helpers ─── */
+const dbName = "VirtualTourVisitorDB";
+const storeName = "scenesCache";
+
+async function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = (e) => e.target.result.createObjectStore(storeName);
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function getCache() {
+    try {
+        const db = await openDB();
+        return new Promise((resolve) => {
+            const request = db.transaction(storeName).objectStore(storeName).get("latest");
+            request.onsuccess = () => resolve(request.result);
+        });
+    } catch (e) { return null; }
+}
+
+async function setCache(data) {
+    try {
+        const db = await openDB();
+        const tx = db.transaction(storeName, "readwrite");
+        tx.objectStore(storeName).put(data, "latest");
+    } catch (e) { console.error("DB Save Error", e); }
+}
+
 async function fetchScenes() {
+    // 1. Ambil dari IndexedDB agar pengunjung tidak menunggu
+    const cachedData = await getCache();
+    if (cachedData) {
+        scenes = cachedData;
+        console.log('💎 Data tour dimuat instan dari cache lokal');
+    }
+
     try {
         const response = await fetch('/api/scenes');
         if (!response.ok) throw new Error('Backend server is not responding');
         const data = await response.json();
+        
         // Convert array to object key by id
-        scenes = data.reduce((acc, scene) => {
+        const freshScenes = data.reduce((acc, scene) => {
             acc[scene.id] = scene;
             return acc;
         }, {});
+
+        // 2. Jika ada data baru, update & simpan ke cache
+        if (JSON.stringify(freshScenes) !== JSON.stringify(scenes)) {
+            scenes = freshScenes;
+            // Jalankan ulang init jika ini adalah pemuatan pertama kali yang tertunda
+            if (viewer && viewer.getScene() === null) {
+                init(); 
+            }
+            console.log('🔄 Data tour diperbarui dari cloud');
+        }
+
+        await setCache(freshScenes);
+
     } catch (e) {
         console.error('Failed to fetch scenes:', e);
-        const flash = document.getElementById('flash');
-        if (flash) {
-            flash.style.opacity = '1';
-            flash.innerHTML = `
-                <div style="color: white; text-align: center; padding: 20px;">
-                    <p>Mungkin Server Belum Jalan.</p>
-                    <p style="font-size: 12px; opacity: 0.7;">Pastikan Anda menjalankan "npm start" di terminal.</p>
-                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">Coba Lagi</button>
-                </div>
-            `;
+        // Tampilkan pesan error hanya jika benar-benar tidak ada data (server mati & cache kosong)
+        if (Object.keys(scenes).length === 0) {
+            const flash = document.getElementById('flash');
+            if (flash) {
+                flash.style.opacity = '1';
+                flash.innerHTML = `
+                    <div style="color: white; text-align: center; padding: 20px;">
+                        <p>Mungkin Server Belum Jalan.</p>
+                        <p style="font-size: 12px; opacity: 0.7;">Pastikan Anda menjalankan "npm start" di terminal.</p>
+                        <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">Coba Lagi</button>
+                    </div>
+                `;
+            }
         }
-        throw e; // Stop init
     }
 }
 
