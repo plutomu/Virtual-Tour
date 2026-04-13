@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import sharp from 'sharp';
 
 const app = express();
 app.use(cors());
@@ -30,7 +31,6 @@ app.get('/api/scenes', async (req, res) => {
 app.post('/api/scenes', async (req, res) => {
     try {
         const scenes = req.body;
-        // Logic: Hapus dan Insert ulang untuk sinkronisasi massal
         await supabase.from('virtual_tour').delete().neq('id', '_dummy_');
         const { error } = await supabase.from('virtual_tour').insert(scenes);
         if (error) throw error;
@@ -40,19 +40,26 @@ app.post('/api/scenes', async (req, res) => {
     }
 });
 
-// API Upload ke Supabase Storage
+// API Upload ke Supabase Storage (Dengan Kompresi Otomatis)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).send('No file uploaded.');
 
         const file = req.file;
-        const fileName = `${Date.now()}-${file.originalname}`;
+        const fileName = `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "")}.jpg`;
         
+        // KOMPRESI GAMBAR via Sharp
+        console.log('🖼️ Mengompres gambar...');
+        const compressedBuffer = await sharp(file.buffer)
+            .resize(4096, 2048, { fit: 'inside', withoutEnlargement: true }) // Ukuran standar panorama tinggi
+            .jpeg({ quality: 80, progressive: true }) // Kompres ke 80% kualitas
+            .toBuffer();
+
         // Upload ke bucket bernama 'panoramas'
         const { data, error } = await supabase.storage
             .from('panoramas')
-            .upload(fileName, file.buffer, {
-                contentType: file.mimetype,
+            .upload(fileName, compressedBuffer, {
+                contentType: 'image/jpeg',
                 upsert: true
             });
 
