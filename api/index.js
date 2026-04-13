@@ -11,31 +11,25 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Inisialisasi Supabase
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("⚠️ SUPABASE_URL atau SUPABASE_ANON_KEY belum diatur di Vercel!");
-}
-
-const supabase = (supabaseUrl && supabaseAnonKey) 
-    ? createClient(supabaseUrl, supabaseAnonKey) 
-    : null;
-
-// Middleware cek koneksi database
-const checkDb = (req, res, next) => {
-    if (!supabase) return res.status(500).json({ error: "Database belum terkonfigurasi. Pastikan Environment Variables di Vercel sudah diisi." });
-    next();
+// PENGAMAN: Fungsi untuk inisialisasi Supabase secara aman
+const getSupabase = () => {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_ANON_KEY;
+    if (!url || !key) {
+        throw new Error("Kunci SUPABASE_URL atau SUPABASE_ANON_KEY tidak ditemukan di Environment Variables Vercel!");
+    }
+    return createClient(url, key);
 };
 
 // GET Data Scenes
 app.get('/api/scenes', async (req, res) => {
     try {
+        const supabase = getSupabase();
         const { data, error } = await supabase.from('virtual_tour').select('*').order('created_at', { ascending: true });
         if (error) throw error;
         res.json(data || []);
     } catch (e) {
+        console.error('API Error:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
@@ -43,6 +37,7 @@ app.get('/api/scenes', async (req, res) => {
 // POST Data Scenes
 app.post('/api/scenes', async (req, res) => {
     try {
+        const supabase = getSupabase();
         const scenes = req.body;
         await supabase.from('virtual_tour').delete().neq('id', '_dummy_');
         const { error } = await supabase.from('virtual_tour').insert(scenes);
@@ -53,22 +48,21 @@ app.post('/api/scenes', async (req, res) => {
     }
 });
 
-// API Upload ke Supabase Storage (Dengan Kompresi Otomatis)
+// API Upload ke Supabase Storage (Kuat & Tahan Crash)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
+        const supabase = getSupabase();
         if (!req.file) return res.status(400).send('No file uploaded.');
 
         const file = req.file;
         const fileName = `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "")}.jpg`;
         
-        // KOMPRESI GAMBAR via Sharp
-        console.log('🖼️ Mengompres gambar...');
+        // Kompresi via Sharp
         const compressedBuffer = await sharp(file.buffer)
-            .resize(4096, 2048, { fit: 'inside', withoutEnlargement: true }) // Ukuran standar panorama tinggi
-            .jpeg({ quality: 80, progressive: true }) // Kompres ke 80% kualitas
+            .resize(4096, 2048, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 80, progressive: true })
             .toBuffer();
 
-        // Upload ke bucket bernama 'panoramas'
         const { data, error } = await supabase.storage
             .from('panoramas')
             .upload(fileName, compressedBuffer, {
@@ -78,17 +72,15 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         if (error) throw error;
 
-        // Ambil URL Publik
         const { data: { publicUrl } } = supabase.storage
             .from('panoramas')
             .getPublicUrl(fileName);
 
         res.json({ filePath: publicUrl });
     } catch (e) {
+        console.error('Upload Error:', e.message);
         res.status(500).json({ error: e.message });
     }
 });
-
-export default app;
 
 export default app;
