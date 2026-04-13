@@ -7,67 +7,38 @@ const nodeMap = {
     'scene6': 'node-pelayanan'
 };
 
-const scenes = {
-    scene1: {
-        title: 'Halaman Depan',
-        desc: 'Tampak luar gedung dari sisi jalan utama.',
-        image: 'assets/halaman/halaman.jpg',
-        initialYaw: 0,
-        connections: {
-            forward: { target: 'scene2', label: 'Pintu Masuk', yaw: 0, pitch: -10 }
-        }
-    },
-    scene2: {
-        title: 'Pintu Masuk Utama',
-        desc: 'Akses utama menuju Ruang Layanan.',
-        image: 'assets/pintu_masuk/pintu_masuk.jpg',
-        initialYaw: 0,
-        connections: {
-            back:    { target: 'scene1', label: 'Halaman Depan', yaw: 180, pitch: -10 },
-            forward: { target: 'scene3', label: 'Masuk ke Layanan', yaw: 0, pitch: -10 }
-        }
-    },
-    scene3: {
-        title: 'Ruang Layanan Publik',
-        desc: 'Area layanan utama masyarakat. Akses ke Gedung A & B.',
-        image: 'assets/layanan/layanan.jpg',
-        initialYaw: 0,
-        connections: {
-            back:  { target: 'scene2', label: 'Kembali ke Depan', yaw: 90, pitch: -10 },
-            left:  { target: 'scene5', label: 'Ke Gedung B (Coming Soon)', yaw: -100, pitch: -15 },
-            right: { target: 'scene6', label: 'Ke Gedung A', yaw: -60, pitch: -15 }
-        }
-    },
-    scene5: {
-        title: 'Area Gedung B',
-        desc: 'Gedung dalam pengembangan.',
-        disabled: true
-    },
-    scene6: {
-        title: 'Area Gedung A',
-        desc: 'Area Gedung A yang memanjang.',
-        image: 'assets/gedung_a/gedung_a.jpg',
-        initialYaw: -90,
-        connections: {
-            back: { target: 'scene3', label: 'Kembali ke Layanan', yaw: -5, pitch: -10 },
-            left: { target: 'scene_c', label: 'Ke Gedung C (Coming Soon)', yaw: -170, pitch: -5 }
-        }
-    },
-    scene_c: {
-        title: 'Area Gedung C',
-        desc: 'Gedung dalam pengembangan.',
-        disabled: true
-    },
-    scene_mushola: {
-        title: 'Mushola',
-        desc: 'Area ibadah dalam pengembangan.',
-        disabled: true
-    }
-};
-
+let scenes = {};
 let current  = 'scene1';
 let visited  = new Set(['scene1']);
 let viewer   = null;
+
+async function fetchScenes() {
+    try {
+        const response = await fetch('/api/scenes');
+        if (!response.ok) throw new Error('Backend server is not responding');
+        const data = await response.json();
+        // Convert array to object key by id
+        scenes = data.reduce((acc, scene) => {
+            acc[scene.id] = scene;
+            return acc;
+        }, {});
+    } catch (e) {
+        console.error('Failed to fetch scenes:', e);
+        const flash = document.getElementById('flash');
+        if (flash) {
+            flash.style.opacity = '1';
+            flash.innerHTML = `
+                <div style="color: white; text-align: center; padding: 20px;">
+                    <p>Mungkin Server Belum Jalan.</p>
+                    <p style="font-size: 12px; opacity: 0.7;">Pastikan Anda menjalankan "npm start" di terminal.</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">Coba Lagi</button>
+                </div>
+            `;
+        }
+        throw e; // Stop init
+    }
+}
+
 
 /* ─── Preload Buffer ─── */
 const imageCache = {};
@@ -84,7 +55,8 @@ function preloadImages() {
 }
 
 /* ─── Init ─── */
-function init() {
+async function init() {
+    await fetchScenes();
     // Check for Pannellum library availability
     if (typeof pannellum === 'undefined') {
         const flash = document.getElementById('flash');
@@ -258,7 +230,31 @@ function getHotspots(sceneId) {
             clickHandlerArgs: c.target
         });
     });
+
+    // Add Facility Hotspots
+    if (sceneData.facilities) {
+        sceneData.facilities.forEach(f => {
+            spots.push({
+                pitch: f.pitch,
+                yaw: f.yaw,
+                cssClass: 'custom-facility',
+                createTooltipFunc: facilityHotspotElement,
+                createTooltipArgs: f.label
+            });
+        });
+    }
+
     return spots;
+}
+
+function facilityHotspotElement(hotSpotDiv, args) {
+    const node = document.createElement('div');
+    node.classList.add('custom-facility-node');
+    hotSpotDiv.appendChild(node);
+
+    const tooltip = document.createElement('span');
+    tooltip.innerHTML = args;
+    hotSpotDiv.appendChild(tooltip);
 }
 
 // Custom DOM element for hotspots (Normal Arrow)
@@ -268,11 +264,16 @@ function hotspotElement(hotSpotDiv, args) {
     // Add the circular house/arrow node
     const node = document.createElement('div');
     node.classList.add('custom-path-node');
+    node.style.cursor = 'pointer';
+    
+    // Find the current target from the parent or context (Pannellum passes args as the tooltip text)
+    // In our case, we'll rely on the handler passed by Pannellum or direct hack
     hotSpotDiv.appendChild(node);
 
-    // Label tooltip - relying on style.css for positioning
+    // Label tooltip
     const tooltip = document.createElement('span');
     tooltip.innerHTML = args;
+    tooltip.style.cursor = 'pointer';
     hotSpotDiv.appendChild(tooltip);
 }
 
@@ -290,8 +291,16 @@ function hideText() {
     if (d) d.classList.remove('show');
 }
 
-/* ─── Keyboard ─── */
+/* ─── Keyboard & Shortcuts ─── */
+let secretBuffer = "";
 document.addEventListener('keydown', e => {
+    // Hidden shortcut: type '99' to go to admin
+    secretBuffer += e.key;
+    if (secretBuffer.endsWith('99')) {
+        window.location.href = '/99';
+    }
+    if (secretBuffer.length > 5) secretBuffer = secretBuffer.substring(1);
+
     const conn = scenes[current]?.connections;
     if (!conn) return;
     const keyMap = { ArrowUp:'forward', ArrowDown:'back', ArrowLeft:'left', ArrowRight:'right' };
