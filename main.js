@@ -154,13 +154,7 @@ async function init() {
 function changeScene(id) {
     if (id === current || !scenes[id]) return;
     
-    // Check if the scene actually has a valid image file assigned
-    const targetScene = scenes[id];
-    if (!targetScene.image || targetScene.image.includes('placeholder')) {
-        console.warn(`Scene ${id} skipped: No image asset found.`);
-        return; // Do nothing if file is missing
-    }
-
+    // Proceed to load scene even if image is pending (will show Coming Soon)
     const flash = document.getElementById('flash');
     if (flash) flash.style.opacity = '1';
     hideText();
@@ -203,6 +197,42 @@ function loadScene(id) {
         `;
     }
 
+    // Antigravity: Cek apakah foto sudah ada di Cloud (Coming Soon Mode)
+    const isComingSoon = !s.image || s.image.startsWith('assets/');
+
+    if (isComingSoon) {
+        if (viewer) viewer.destroy();
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center w-full h-full bg-[#050510] relative overflow-hidden">
+                <!-- Advanced Background Layer -->
+                <div class="absolute inset-0 bg-cover bg-center scale-110 blur-sm opacity-30" style="background-image: url('https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=2000')"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/40 via-black/80 to-black"></div>
+                
+                <div class="relative z-10 flex flex-col items-center p-8 lg:p-16 text-center">
+                    <div class="bg-black/40 backdrop-blur-2xl p-10 lg:p-16 rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <div class="w-24 h-24 bg-indigo-600/20 rounded-[2.5rem] border border-indigo-500/30 flex items-center justify-center mb-8 mx-auto animate-pulse shadow-[0_0_30px_rgba(79,70,229,0.4)]">
+                            <i data-lucide="camera-off" class="w-10 h-10 text-indigo-400"></i>
+                        </div>
+                        <h2 class="text-white text-3xl lg:text-5xl font-black uppercase tracking-[0.4em] mb-4 drop-shadow-2xl">Coming Soon</h2>
+                        <p class="text-indigo-200/60 text-[10px] lg:text-[12px] font-black uppercase tracking-[0.3em] max-w-sm leading-loose mx-auto">Ruangan ini sedang dalam proses pemotretan 360° oleh tim teknis kami.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        
+        // Tetap tampilkan info bar
+        document.getElementById('room-title').innerText = s.title;
+        document.getElementById('room-desc').innerText = "Ruangan ini akan segera dapat diakses publik.";
+        renderArrows(s);
+        
+        if (flash) {
+            flash.style.opacity = '0';
+            flash.innerHTML = '';
+        }
+        return;
+    }
+
     // Recovery orientation from localStorage
     const savedYaw = localStorage.getItem('vt_last_yaw');
     const savedPitch = localStorage.getItem('vt_last_pitch');
@@ -227,17 +257,20 @@ function loadScene(id) {
 
         viewer.on('load', () => {
             const flash = document.getElementById('flash');
-            if (flash && flash.innerHTML === '') {
+            if (flash) {
                 flash.style.opacity = '0';
+                setTimeout(() => { if(flash.style.opacity === '0') flash.innerHTML = ''; }, 500);
                 showText();
+                if (window.lucide) lucide.createIcons();
             }
         });
 
         // Set an emergency timeout if 'load' event doesn't fire fast enough
         setTimeout(() => {
             const flash = document.getElementById('flash');
-            if (flash && flash.style.opacity === '1' && flash.innerHTML === '') {
+            if (flash && flash.style.opacity === '1') {
                 flash.style.opacity = '0';
+                setTimeout(() => { if(flash.style.opacity === '0') flash.innerHTML = ''; }, 500);
             }
         }, 5000); // 5 seconds for slow panoramas
 
@@ -279,6 +312,11 @@ function getHotspots(sceneId) {
         if (c.pitch !== undefined) hPitch = c.pitch;
 
         const targetData = scenes[c.target];
+        const isComingSoon = !targetData || !targetData.image || targetData.image.startsWith('assets/');
+        
+        // Antigravity: Hilangkan tanda panah jika tujuannya belum siap (Coming Soon)
+        if (isComingSoon) return;
+
         const isDisabled = targetData && targetData.disabled;
 
         spots.push({

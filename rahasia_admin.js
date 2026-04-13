@@ -637,8 +637,34 @@ window.previewChangeScene = (id) => {
 
     if (quickPreviewViewer) quickPreviewViewer.destroy();
     
-    // Antigravity: Show Loader in Preview
     const container = document.getElementById('preview-panorama');
+    
+    // Antigravity: Cek apakah foto sudah ada di Cloud (Coming Soon Mode)
+    const isComingSoon = !s.image || s.image.startsWith('assets/');
+
+    if (isComingSoon) {
+        if (container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-full bg-[#050510] relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cover bg-center scale-110 blur-sm opacity-30" style="background-image: url('https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=2000')"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/40 via-black/80 to-black"></div>
+                    <div class="relative z-10 flex flex-col items-center p-8 text-center">
+                        <div class="bg-black/40 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                            <div class="w-20 h-20 bg-indigo-600/20 rounded-[2rem] border border-indigo-500/30 flex items-center justify-center mb-6 mx-auto animate-pulse">
+                                <i data-lucide="camera-off" class="w-8 h-8 text-indigo-400"></i>
+                            </div>
+                            <h2 class="text-white text-3xl font-black uppercase tracking-[0.3em] mb-4">Coming Soon</h2>
+                            <p class="text-indigo-200/60 text-[10px] font-black uppercase tracking-[0.2em] max-w-xs leading-loose mx-auto">Ruangan ini sedang dalam pengerjaan teknis.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+        return;
+    }
+
+    // Jika ada foto, tampilkan Spinner sebentar
     if (container) {
         container.innerHTML = `
             <div class="spinner-container">
@@ -649,15 +675,34 @@ window.previewChangeScene = (id) => {
     }
     
     const h = [];
-    Object.entries(s.connections || {}).forEach(([dir, c]) => h.push({
-        pitch: c.pitch, yaw: c.yaw, createTooltipFunc: renderH, createTooltipArgs: c.label,
-        clickHandlerFunc: (e, arg) => window.previewChangeScene(arg), clickHandlerArgs: c.target, cssClass: 'custom-path'
-    }));
+    Object.entries(s.connections || {}).forEach(([dir, c]) => {
+        const targetData = scenes.find(x => x.id === c.target);
+        
+        // Antigravity: Hilangkan rute Soon di Preview (Cermin Halaman Utama)
+        const targetIsSoon = !targetData || !targetData.image || targetData.image.startsWith('assets/');
+        if (targetIsSoon) return;
+
+        h.push({
+            pitch: c.pitch, yaw: c.yaw, 
+            createTooltipFunc: renderH, 
+            createTooltipArgs: c.label,
+            clickHandlerFunc: (e, arg) => window.previewChangeScene(arg), 
+            clickHandlerArgs: c.target, 
+            cssClass: 'custom-path'
+        });
+    });
+
     (s.facilities || []).forEach(f => h.push({
         pitch: f.pitch, yaw: f.yaw, createTooltipFunc: renderF, createTooltipArgs: f.label, cssClass: 'custom-facility'
     }));
 
-    quickPreviewViewer = pannellum.viewer('preview-panorama', { type: 'equirectangular', panorama: s.image, autoLoad: true, hotSpots: h });
+    quickPreviewViewer = pannellum.viewer('preview-panorama', { 
+        type: 'equirectangular', 
+        panorama: s.image, 
+        autoLoad: true, 
+        showControls: false,
+        hotSpots: h 
+    });
 };
 
 function renderH(d, a) { d.innerHTML = `<div class="custom-path-node"></div><span>${a}</span>`; }
