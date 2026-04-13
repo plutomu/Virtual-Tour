@@ -107,13 +107,32 @@ window.zoomToFit = () => {
 
 function initGraph() {
     const container = document.getElementById('vis-container');
-    const nodes = new vis.DataSet(scenes.map(s => ({
-        id: s.id,
-        label: s.title,
-        shape: s.image ? 'circularImage' : 'dot',
-        image: s.image || '',
-        color: { border: '#4f46e5', background: '#fff' }
-    })));
+    
+    // Antigravity: Optimal Image Handling for Cloud URLs
+    const nodesData = scenes.map(s => {
+        let imageUrl = s.image || '';
+        
+        // Anti-404: Jika link masih link lokal lama, tampilkan placeholder agar tidak kosong
+        if (imageUrl.startsWith('assets/')) {
+            imageUrl = `https://placehold.co/200x200/4f46e5/ffffff?text=${encodeURIComponent(s.id)}`;
+        }
+
+        return {
+            id: s.id,
+            label: s.title,
+            shape: imageUrl ? 'circularImage' : 'dot',
+            image: imageUrl,
+            color: { 
+                border: '#4f46e5', 
+                background: '#ffffff',
+                highlight: { border: '#4f46e5', background: '#eef2ff' }
+            },
+            size: 30,
+            borderWidth: 3
+        };
+    });
+
+    const nodes = new vis.DataSet(nodesData);
 
     // Meredesain Garis Node (Dinamis & Smooth)
     const edges = [];
