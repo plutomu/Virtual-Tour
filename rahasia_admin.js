@@ -58,7 +58,7 @@ function initGraph() {
         label: s.title,
         shape: s.image ? 'circularImage' : 'dot',
         image: s.image || '',
-        color: { border: s.disabled ? '#e2e8f0' : '#4f46e5', background: '#fff' }
+        color: { border: '#4f46e5', background: '#fff' }
     })));
 
     // Meredesain Garis Node (Dinamis & Smooth)
@@ -140,7 +140,9 @@ window.editScene = (id) => {
     document.getElementById('scene-id').disabled = true;
     document.getElementById('scene-title').value = s.title;
     document.getElementById('scene-desc').value = s.desc || '';
-    document.getElementById('scene-active').checked = !s.disabled;
+    
+    // Antigravity: Status is now always active, so no need to set checkbox
+    // document.getElementById('scene-active').checked = !s.disabled;
     document.getElementById('scene-image-path').value = s.image;
 
     const preview = document.getElementById('upload-preview');
@@ -187,7 +189,7 @@ window.saveScene = async function() {
         if (s) {
             s.title = document.getElementById('scene-title').value;
             s.desc = document.getElementById('scene-desc').value;
-            s.disabled = !document.getElementById('scene-active').checked;
+            s.disabled = false;
             s.image = document.getElementById('scene-image-path').value;
         }
     }

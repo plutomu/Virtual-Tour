@@ -31,6 +31,16 @@
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 0; }
+
+        /* Marker Picker: High Contrast Red */
+        .pnlm-pointer {
+            border: 2px solid #ef4444 !important;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6) !important;
+        }
+        .pnlm-pointer::after, .pnlm-pointer::before {
+            background-color: #ef4444 !important;
+        }
+        .pnlm-dragfast { cursor: crosshair !important; }
     </style>
 </head>
 <body class="bg-slate-50 font-['Outfit'] overflow-hidden">
@@ -50,7 +60,6 @@
                     <button onclick="window.openQuickPreview()" title="Lihat Tour" class="w-9 h-9 bg-white hover:bg-slate-50 text-slate-600 border border-slate-100 rounded-xl flex items-center justify-center transition-all shadow-sm active:scale-90">
                         <i data-lucide="eye" class="w-4 h-4"></i>
                     </button>
-                    <div class="w-px h-6 bg-slate-200 mx-1"></div>
                     <button onclick="window.zoomToFit()" title="Reset Zoom" class="w-9 h-9 bg-white/50 hover:bg-white text-slate-400 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all active:scale-90">
                         <i data-lucide="maximize" class="w-4 h-4"></i>
                     </button>
@@ -129,10 +138,8 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
             <!-- Form fields exactly as before but layout optimized -->
             <div class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ID Ruangan</label>
-                    <input type="text" id="scene-id" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700 text-sm" placeholder="ID Unik (misal: lobi)">
-                </div>
+                <!-- Hidden Auto-ID -->
+                <input type="hidden" id="scene-id">
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Ruangan</label>
                     <input type="text" id="scene-title" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700 text-sm" placeholder="Nama Tampilan">
@@ -143,15 +150,9 @@
                     <textarea id="scene-desc" rows="3" class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all resize-none font-medium text-xs text-slate-600" placeholder="Detail singkat mengenai ruangan ini..."></textarea>
                 </div>
                 
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div>
-                        <p class="text-xs font-bold text-slate-700">Status Aktif</p>
-                        <p class="text-[9px] font-medium text-slate-400">Tampilkan di Tour Utama</p>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="scene-active" checked>
-                        <span class="slider"></span>
-                    </label>
+                <div id="status-display" class="flex items-center gap-2 mb-6 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Ruangan Aktif</span>
                 </div>
             </div>
 
@@ -172,7 +173,7 @@
             </div>
 
             <!-- Components: Picker, Connection, Facilities (handled by JS) -->
-            <div id="hotspot-picker-tool" class="hidden mt-4 p-4 bg-slate-900 rounded-[2rem] border border-white/5 shadow-2xl">
+            <div id="hotspot-picker-tool" class="hidden mt-4 p-4 bg-black rounded-[2rem] border border-white/10 shadow-2xl">
                 <!-- picker content -->
             </div>
 
@@ -192,14 +193,13 @@
             </div>
         </div>
 
-        <!-- Footer Actions -->
-        <div class="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-            <button class="w-14 h-14 bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 rounded-2xl flex items-center justify-center transition-all active:scale-95" title="Hapus" onclick="window.deleteScene()">
-                <i data-lucide="trash-2" class="w-6 h-6"></i>
+        <!-- Footer Actions (Minimal Icons) -->
+        <div class="p-4 bg-white border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <button onclick="window.deleteScene()" id="delete-btn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-90 border border-rose-100/50" title="Hapus Ruangan">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
-            <button class="flex-1 h-14 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2" onclick="saveScene()">
-                <i data-lucide="save" class="w-5 h-5"></i>
-                Simpan
+            <button onclick="window.saveScene()" class="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-indigo-100 active:scale-90" title="Simpan Perubahan">
+                <i data-lucide="save" class="w-4 h-4"></i>
             </button>
         </div>
     </div>
