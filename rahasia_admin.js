@@ -8,11 +8,16 @@ let quickPreviewViewer = null;
 async function loadScenes() {
     try {
         const response = await fetch('/api/scenes');
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `Server error: ${response.status}`);
+        }
         scenes = await response.json();
         updateSidebar();
         initGraph();
     } catch (e) {
         console.error('Failed to load scenes:', e);
+        // Tampilkan pesan error ke user jika perlu
     }
 }
 window.loadScenes = loadScenes;
@@ -115,10 +120,8 @@ window.showNewSceneForm = () => {
     editingId = null;
     document.getElementById('form-title').innerText = 'Tambah Ruangan Baru';
     document.getElementById('scene-id').value = '';
-    document.getElementById('scene-id').disabled = false;
     document.getElementById('scene-title').value = '';
     document.getElementById('scene-desc').value = '';
-    document.getElementById('scene-active').checked = true;
     document.getElementById('scene-image-path').value = '';
     document.getElementById('upload-preview').classList.add('hidden');
     document.getElementById('upload-placeholder').classList.remove('hidden');
