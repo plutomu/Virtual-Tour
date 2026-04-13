@@ -7,57 +7,60 @@ dotenv.config();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const BUCKET_NAME = 'panoramas';
-
-// Tentukan folder assets lokal Anda
-const assetsDir = path.join(process.cwd(), 'public', 'assets');
+const assetsDir = path.resolve(process.cwd(), 'public/assets');
 
 async function migrate() {
     console.log('🚀 Memulai migrasi gambar ke Supabase Storage...');
+    console.log('📂 Memeriksa folder:', assetsDir);
     
     if (!fs.existsSync(assetsDir)) {
         console.error('❌ Folder assets tidak ditemukan.');
         return;
     }
 
-    // Fungsi untuk mencari file secara rekursif (termasuk di dalam folder uploads)
-    const getAllFiles = (dirPath, arrayOfFiles) => {
-        const files = fs.readdirSync(dirPath);
-        arrayOfFiles = arrayOfFiles || [];
+    const allFiles = [];
+    const walk = (dir) => {
+        const files = fs.readdirSync(dir);
         files.forEach(file => {
-            if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-                arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+            const fullPath = path.join(dir, file);
+            if (fs.statSync(fullPath).isDirectory()) {
+                walk(fullPath);
             } else if (file.match(/\.(jpg|jpeg|png|webp)$/i)) {
-                arrayOfFiles.push(path.join(dirPath, "/", file));
+                allFiles.push(fullPath);
             }
         });
-        return arrayOfFiles;
     };
 
-    const allFiles = getAllFiles(assetsDir);
+    walk(assetsDir);
+    
+    console.log(`🔍 Ditemukan ${allFiles.length} gambar untuk dimigrasi.`);
     
     if (allFiles.length === 0) {
-        console.log('ℹ️ Tidak ada gambar baru yang perlu dimigrasi.');
+        console.log('ℹ️ Tidak ada gambar ditemukan. Periksa kembali lokasi folder assets Anda.');
+        return;
     }
 
     for (const filePath of allFiles) {
-        const file = path.basename(filePath);
+        const fileName = path.basename(filePath);
         const fileBuffer = fs.readFileSync(filePath);
         
-        console.log(`📤 Mengunggah: ${file}...`);
-        const { error } = await supabase.storage.from(BUCKET_NAME).upload(file, fileBuffer, {
-            contentType: 'image/jpeg',
-            upsert: true
-        });
+        console.log(`📤 Mengunggah: ${fileName}...`);
+        
+        const { error } = await supabase.storage
+            .from(BUCKET_NAME)
+            .upload(fileName, fileBuffer, {
+                contentType: 'image/jpeg',
+                upsert: true
+            });
 
         if (error) {
-            console.error(`❌ Gagal mengunggah ${file}: ${error.message}`);
+            console.error(`❌ Gagal mengunggah ${fileName}:`, error.message);
         } else {
-            console.log(`✅ Berhasil: ${file}`);
+            console.log(`✅ Berhasil: ${fileName}`);
         }
     }
     
-    // Hapus total folder assets setelah semua selesai
-    console.log('\n🧹 Melakukan pembersihan total folder...');
+    console.log('\n🧹 Melakukan pembersihan total folder assets...');
     try {
         fs.rmSync(assetsDir, { recursive: true, force: true });
         console.log('🗑️ Folder assets telah dihapus sepenuhnya.');
@@ -65,7 +68,7 @@ async function migrate() {
         console.error('⚠️ Gagal menghapus folder assets:', err.message);
     }
     
-    console.log('\n✨ Migrasi & Pembersihan Selesai! Sekarang proyek Anda 100% cloud-ready.');
+    console.log('\n✨ Migrasi Selesai! Coba cek Bucket Supabase Anda sekarang.');
 }
 
-migrate();
+migrate().catch(err => console.error('❌ Terjadi error sistem:', err.message));
