@@ -231,8 +231,25 @@ window.saveScene = async function() {
 
         // 1. UPLOAD GAMBAR KE SUPABASE (Jika ada file baru)
         if (imageInput && imageInput.files && imageInput.files[0]) {
+            const originalFile = imageInput.files[0];
+            
+            // Kompresi Client-Side agar upload secepat kilat & tembus limit Vercel
+            const compressedBlob = await new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(originalFile);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Standar 4K Panorama (4096 x 2048)
+                    canvas.width = 4096; 
+                    canvas.height = 2048;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                };
+            });
+
             const formData = new FormData();
-            formData.append('image', imageInput.files[0]);
+            formData.append('image', compressedBlob, 'panorama.jpg');
 
             const uploadRes = await fetch('/api/upload', {
                 method: 'POST',
@@ -286,11 +303,11 @@ window.saveScene = async function() {
 
         loadScenes();
         window.closeForm();
-        alert('✅ Berhasil disimpan ke Cloud!');
+        window.showToast('✅ Berhasil disimpan ke Cloud!');
 
     } catch (e) {
         console.error(e);
-        alert('❌ Error: ' + e.message);
+        window.showToast('❌ Error: ' + e.message, true);
     } finally {
         btn.innerHTML = originalHTML;
         if (window.lucide) lucide.createIcons();
@@ -610,6 +627,33 @@ window.filterScenes = (query) => {
             card.style.display = 'none';
         }
     });
+};
+
+
+window.showToast = (msg, isError = false) => {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = toast.querySelector('.bg-emerald-500');
+    
+    toastMsg.innerText = msg;
+    
+    // Warna Merah jika Error
+    if (isError) {
+        toastIcon.classList.replace('bg-emerald-500', 'bg-rose-500');
+        toastIcon.classList.replace('shadow-[0_0_15px_rgba(16,185,129,0.4)]', 'shadow-[0_0_15px_rgba(244,63,94,0.4)]');
+    } else {
+        toastIcon.classList.replace('bg-rose-500', 'bg-emerald-500');
+        toastIcon.classList.replace('shadow-[0_0_15px_rgba(244,63,94,0.4)]', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+    }
+
+    toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4', 'scale-95');
+    toast.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+    
+    if (window.lucide) lucide.createIcons();
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+    }, 3000);
 };
 
 window.onload = () => {
