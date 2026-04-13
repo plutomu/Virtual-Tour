@@ -219,42 +219,82 @@ window.closeForm = () => {
 };
 
 window.saveScene = async function() {
-    if (!editingId) {
-        // Create mode
-        const newId = document.getElementById('scene-id').value.trim();
-        if (!newId) return alert('ID Ruangan wajib diisi!');
-        if (scenes.find(x => x.id === newId)) return alert('ID sudah digunakan!');
-        
-        const newScene = {
-            id: newId,
-            title: document.getElementById('scene-title').value,
-            desc: document.getElementById('scene-desc').value,
-            disabled: !document.getElementById('scene-active').checked,
-            image: document.getElementById('scene-image-path').value,
-            connections: {},
-            facilities: []
-        };
-        scenes.push(newScene);
-    } else {
-        // Update mode
-        const s = scenes.find(x => x.id === editingId);
-        if (s) {
-            s.title = document.getElementById('scene-title').value;
-            s.desc = document.getElementById('scene-desc').value;
-            s.disabled = false;
-            s.image = document.getElementById('scene-image-path').value;
-        }
-    }
-
+    const btn = document.querySelector('button[onclick="window.saveScene()"]');
+    const originalHTML = btn.innerHTML;
+    
     try {
-        await fetch('/api/scenes', {
-            method: 'PUT',
+        btn.innerHTML = '<i class="animate-spin" data-lucide="loader-2"></i>';
+        if (window.lucide) lucide.createIcons();
+
+        let imagePath = document.getElementById('scene-image-path').value;
+        const imageInput = document.getElementById('scene-image-input');
+
+        // 1. UPLOAD GAMBAR KE SUPABASE (Jika ada file baru)
+        if (imageInput.files && imageInput.files[0]) {
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            const uploadRes = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadRes.ok) {
+                const err = await uploadRes.json().catch(() => ({}));
+                throw new Error(err.error || 'Gagal mengunggah foto 360');
+            }
+
+            const uploadData = await uploadRes.json();
+            imagePath = uploadData.filePath;
+        }
+
+        // 2. SIAPKAN DATA RUANGAN
+        if (!editingId) {
+            const newId = document.getElementById('scene-id').value.trim();
+            if (!newId) throw new Error('ID Ruangan wajib diisi!');
+            if (scenes.find(x => x.id === newId)) throw new Error('ID sudah digunakan!');
+            
+            scenes.push({
+                id: newId,
+                title: document.getElementById('scene-title').value,
+                desc: document.getElementById('scene-desc').value,
+                image: imagePath,
+                disabled: false,
+                connections: {},
+                facilities: []
+            });
+        } else {
+            const s = scenes.find(x => x.id === editingId);
+            if (s) {
+                s.title = document.getElementById('scene-title').value;
+                s.desc = document.getElementById('scene-desc').value;
+                s.image = imagePath;
+            }
+        }
+
+        // 3. SIMPAN KE DATABASE (POST ke /api/scenes)
+        const saveRes = await fetch('/api/scenes', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(scenes)
         });
+
+        if (!saveRes.ok) throw new Error('Gagal menyimpan data ke database');
+
+        // Bersihkan cache IndexedDB agar data baru muncul
+        if (typeof setCache === 'function') await setCache(scenes);
+
         loadScenes();
         window.closeForm();
-    } catch (e) { alert('Gagal menyimpan data!'); }
+        alert('✅ Berhasil disimpan ke Cloud!');
+
+    } catch (e) {
+        console.error(e);
+        alert('❌ Error: ' + e.message);
+    } finally {
+        btn.innerHTML = originalHTML;
+        if (window.lucide) lucide.createIcons();
+    }
 };
 
 window.deleteScene = async () => {
