@@ -31,16 +31,6 @@
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 0; }
-
-        /* Marker Picker: High Contrast Red */
-        .pnlm-pointer {
-            border: 2px solid #ef4444 !important;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6) !important;
-        }
-        .pnlm-pointer::after, .pnlm-pointer::before {
-            background-color: #ef4444 !important;
-        }
-        .pnlm-dragfast { cursor: crosshair !important; }
     </style>
 </head>
 <body class="bg-slate-50 font-['Outfit'] overflow-hidden">
@@ -173,7 +163,8 @@
             </div>
 
             <!-- Components: Picker, Connection, Facilities (handled by JS) -->
-            <div id="hotspot-picker-tool" class="hidden mt-4 p-4 bg-black rounded-[2rem] border border-white/10 shadow-2xl">
+            <!-- Hotspot Picker Tool (Clean White Theme) -->
+            <div id="hotspot-picker-tool" class="hidden mt-4 p-4 bg-white rounded-[2rem] border border-slate-100 shadow-xl relative overflow-hidden">
                 <!-- picker content -->
             </div>
 

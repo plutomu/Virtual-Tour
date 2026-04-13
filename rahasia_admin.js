@@ -332,19 +332,19 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
     tool.classList.remove('hidden');
     tool.innerHTML = `
         <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Pin Location Picker</span>
+            <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Pin Location Picker</span>
             <button onclick="window.hidePicker()" class="text-white/40 hover:text-rose-400"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
         </div>
-        <div class="relative w-full h-48 bg-black rounded-2xl overflow-hidden mb-3 border border-white/10">
+        <div class="relative w-full h-48 bg-slate-100 rounded-2xl overflow-hidden mb-3 border border-slate-200">
             <div id="picker-panorama" class="w-full h-full"></div>
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div class="w-8 h-8 flex items-center justify-center opacity-80">
-                    <div class="absolute w-px h-8 bg-indigo-500 shadow-lg"></div>
-                    <div class="absolute w-8 h-px bg-indigo-500 shadow-lg"></div>
+                <div class="w-8 h-8 flex items-center justify-center opacity-90">
+                    <div class="absolute w-px h-8 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                    <div class="absolute w-8 h-px bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
                 </div>
             </div>
         </div>
-        <button onclick="window.confirmPicker()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all">Confirm Marker Position</button>
+        <button onclick="window.confirmPicker()" class="w-full py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg shadow-red-900/20">Confirm Marker Position</button>
     `;
 
     if (pickerViewer) pickerViewer.destroy();
