@@ -61,18 +61,21 @@ function initGraph() {
         color: { border: s.disabled ? '#e2e8f0' : '#4f46e5', background: '#fff' }
     })));
 
+    // Meredesain Garis Node (Dinamis & Smooth)
     const edges = [];
     scenes.forEach(s => {
         const conns = s.connections || {};
         Object.entries(conns).forEach(([dir, c]) => {
-            const labels = { 'forward': 'Depan', 'back': 'Belakang', 'left': 'Kiri', 'right': 'Kanan' };
+            const labelsMap = { 'forward': 'Depan', 'back': 'Belakang', 'left': 'Kiri', 'right': 'Kanan' };
             edges.push({ 
                 from: s.id, 
                 to: c.target, 
-                label: labels[dir] || dir,
+                label: labelsMap[dir] || dir,
                 arrows: 'to', 
-                color: { color: '#cbd5e1' },
-                font: { align: 'top', size: 9, face: 'Outfit' }
+                color: { color: '#818cf8', opacity: 0.6 },
+                width: 1.5,
+                smooth: { type: 'curvedCW', roundness: 0.15 },
+                font: { align: 'top', size: 8, face: 'Outfit', color: '#6366f1', strokeWidth: 0 }
             });
         });
     });
@@ -433,6 +436,19 @@ function renderF(d, a) { d.innerHTML = `<div class="custom-facility-node"></div>
 window.closeQuickPreview = () => {
     document.getElementById('quick-preview-modal').classList.add('hidden');
     if (quickPreviewViewer) quickPreviewViewer.destroy();
+};
+
+window.filterScenes = (query) => {
+    const q = query.toLowerCase();
+    const cards = document.querySelectorAll('#sidebar-scene-list > div');
+    cards.forEach(card => {
+        const title = card.querySelector('h4')?.innerText.toLowerCase() || '';
+        if (title.includes(q)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 };
 
 window.onload = loadScenes;
