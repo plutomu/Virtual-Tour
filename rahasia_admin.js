@@ -5,19 +5,68 @@ let pickerViewer = null;
 let quickPreviewViewer = null;
 
 // Export functions to window because of type="module"
+// Helper untuk IndexedDB
+const dbName = "VirtualTourDB";
+const storeName = "scenesCache";
+
+async function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = (e) => e.target.result.createObjectStore(storeName);
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function getCache() {
+    try {
+        const db = await openDB();
+        return new Promise((resolve) => {
+            const request = db.transaction(storeName).objectStore(storeName).get("latest");
+            request.onsuccess = () => resolve(request.result);
+        });
+    } catch (e) { return null; }
+}
+
+async function setCache(data) {
+    try {
+        const db = await openDB();
+        const tx = db.transaction(storeName, "readwrite");
+        tx.objectStore(storeName).put(data, "latest");
+    } catch (e) { console.error("DB Save Error", e); }
+}
+
 async function loadScenes() {
+    // 1. Tampilkan dari IndexedDB agar Instan & Tangguh
+    const cachedData = await getCache();
+    if (cachedData) {
+        scenes = cachedData;
+        updateSidebar();
+        initGraph();
+        console.log('💎 Data dimuat instan dari IndexedDB');
+    }
+
     try {
         const response = await fetch('/api/scenes');
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || `Server error: ${response.status}`);
         }
-        scenes = await response.json();
-        updateSidebar();
-        initGraph();
+        
+        const freshScenes = await response.json();
+        
+        if (JSON.stringify(freshScenes) !== JSON.stringify(scenes)) {
+            scenes = freshScenes;
+            updateSidebar();
+            initGraph();
+            console.log('🔄 Data diperbarui dari server');
+        }
+
+        // 2. Simpan ke IndexedDB
+        await setCache(freshScenes);
+
     } catch (e) {
         console.error('Failed to load scenes:', e);
-        // Tampilkan pesan error ke user jika perlu
     }
 }
 window.loadScenes = loadScenes;
