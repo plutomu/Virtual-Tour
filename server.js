@@ -59,16 +59,16 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         const supabase = getSupabase();
         if (!req.file) return res.status(400).send('No file uploaded.');
         const file = req.file;
-        const fileName = `${Date.now()}-local-${file.originalname.replace(/\.[^/.]+$/, "")}.jpg`;
+        const fileName = `${Date.now()}-local-${file.originalname.replace(/\.[^/.]+$/, "")}.webp`;
         
         const compressedBuffer = await sharp(file.buffer)
             .resize(4096, 2048, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 80, progressive: true })
+            .webp({ quality: 85, effort: 6 }) // WebP lebih efisien & tajam daripada JPEG
             .toBuffer();
 
         const { data, error } = await supabase.storage
             .from('panoramas')
-            .upload(fileName, compressedBuffer, { contentType: 'image/jpeg', upsert: true });
+            .upload(fileName, compressedBuffer, { contentType: 'image/webp', upsert: true });
 
         if (error) throw error;
         const { data: { publicUrl } } = supabase.storage.from('panoramas').getPublicUrl(fileName);
