@@ -637,7 +637,7 @@ input:checked + .slider:before {
 #flash {
     position: absolute;
     inset: 0;
-    background: #ffffff;
+    background: #000000;
     opacity: 0;
     pointer-events: none;
     z-index: 100;

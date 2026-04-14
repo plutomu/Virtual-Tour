@@ -25,9 +25,20 @@
             width: 100%;
             height: 100%;
             background: #000;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Custom styles to hide pannellum controls if we want a cleaner look */
+        #panorama.zoom-dash {
+            transform: scale(1.2);
+            filter: blur(15px) brightness(0.4);
+        }
+
+        #panorama.zoom-enter {
+            transform: scale(0.95);
+            filter: blur(10px);
+        }
+
+        /* Custom styles to hide pannellum controls */
         .pnlm-control-bar,
         .pnlm-panorama-info {
             display: none !important;

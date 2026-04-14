@@ -157,10 +157,10 @@ async function init() {
 }
 
 /* ─── Change scene ─── */
-function changeScene(id) {
-    if (id === current || !scenes[id]) return;
+    // Jalankan efek zoom dash (zoom in + blur)
+    const pano = document.getElementById('panorama');
+    if (pano) pano.classList.add('zoom-dash');
     
-    // Proceed to load scene even if image is pending (will show Coming Soon)
     const flash = document.getElementById('flash');
     if (flash) flash.style.opacity = '1';
     hideText();
@@ -178,7 +178,7 @@ function changeScene(id) {
         localStorage.removeItem('vt_last_pitch');
         
         loadScene(id);
-    }, 280); // Wait for flash transition to peak
+    }, 450); // Menyesuaikan dengan durasi transisi CSS (0.5s)
 }
 
 /* ─── Load scene ─── */
@@ -193,14 +193,9 @@ function loadScene(id) {
         container.innerHTML = ''; // Force clear
     }
     if (flash) {
-        // Tampilkan Spinner di dalam flash (Loader Premium)
+        // Hanya tampilkan flash hitam tanpa teks/spinner
         flash.style.opacity = '1';
-        flash.innerHTML = `
-            <div class="spinner-container">
-                <div class="spinner"></div>
-                <p class="loading-text">Menyiapkan Ruangan...</p>
-            </div>
-        `;
+        flash.innerHTML = ''; 
     }
 
     // Antigravity: Cek apakah foto sudah ada di Cloud (Coming Soon Mode)
@@ -266,12 +261,26 @@ function loadScene(id) {
 
         viewer.on('load', () => {
             const flash = document.getElementById('flash');
+            const pano = document.getElementById('panorama');
+            
             if (flash) {
                 flash.style.opacity = '0';
                 setTimeout(() => { if(flash.style.opacity === '0') flash.innerHTML = ''; }, 500);
-                showText();
-                if (window.lucide) lucide.createIcons();
             }
+
+            // Jalankan animasi 'Resolve' (zoom out + hapus blur)
+            if (pano) {
+                pano.classList.remove('zoom-dash'); // Bersihkan sisa zoom sebelumnya
+                pano.classList.add('zoom-enter');   // Start from a bit zoomed out/blurred
+                
+                // Force reset after short delay
+                setTimeout(() => {
+                    pano.classList.remove('zoom-enter');
+                }, 50);
+            }
+
+            showText();
+            if (window.lucide) lucide.createIcons();
         });
 
         // Set an emergency timeout if 'load' event doesn't fire fast enough
