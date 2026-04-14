@@ -127,16 +127,20 @@ async function fetchScenes() {
 }
 
 
-/* ─── Preload Buffer ─── */
+/* ─── Smart Preload Buffer ─── */
 const imageCache = {};
 
-function preloadImages() {
-    Object.values(scenes).forEach(s => {
-        // Fix: check if s is a valid scene object with an image asset
-        if (s && s.image && !imageCache[s.image]) {
+function preloadAdjacentScenes(sceneId) {
+    const s = scenes[sceneId];
+    if (!s || !s.connections) return;
+
+    Object.values(s.connections).forEach(conn => {
+        const target = scenes[conn.target];
+        if (target && target.image && !imageCache[target.image]) {
+            console.log(`📡 Speculative preload: ${target.title}`);
             const img = new Image();
-            img.src = s.image;
-            imageCache[s.image] = img;
+            img.src = target.image;
+            imageCache[target.image] = img;
         }
     });
 }
@@ -161,8 +165,7 @@ async function init() {
         return;
     }
 
-    preloadImages();
-    
+
     // Recovery state from localStorage
     const savedScene = localStorage.getItem('vt_last_scene');
     const savedVisited = localStorage.getItem('vt_visited');
@@ -337,6 +340,9 @@ function loadScene(id) {
 
     document.getElementById('room-title').textContent = s.title;
     document.getElementById('room-desc').textContent = s.desc;
+
+    // Smart Preload: Hanya ambil gambar di ruangan terdekat
+    preloadAdjacentScenes(id);
 
     // Trigger per-building map update
     if (window.BuildingMap) window.BuildingMap.update(id);
