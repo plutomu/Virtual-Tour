@@ -1,4 +1,3 @@
-/* ─── State ─── */
 const nodeMap = {
     'scene1': 'node-halaman',
     'scene2': 'node-masuk',
@@ -11,6 +10,34 @@ let scenes = {};
 let current  = 'scene1';
 let visited  = new Set(['scene1']);
 let viewer   = null;
+
+/* ─── Cache Busting Check ─── */
+async function checkVersion() {
+    try {
+        const response = await fetch('/version.json?t=' + Date.now());
+        if (!response.ok) return;
+        const serverVersion = await response.json();
+        const localTimestamp = localStorage.getItem('vt_app_timestamp');
+
+        if (localTimestamp && localTimestamp !== serverVersion.timestamp.toString()) {
+            console.log(`🚀 New build detected (${serverVersion.date}). Clearing cache...`);
+            const db = await openDB();
+            const tx = db.transaction(storeName, "readwrite");
+            tx.objectStore(storeName).clear();
+        }
+        
+        localStorage.setItem('vt_app_timestamp', serverVersion.timestamp);
+    } catch (e) {
+        console.error("Version check failed:", e);
+    }
+}
+async function clearAllCache() {
+    const db = await openDB();
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).clear();
+    location.reload();
+}
+window.clearAppCache = clearAllCache;
 
 /* ─── IndexedDB Helpers ─── */
 const dbName = "VirtualTourVisitorDB";
@@ -116,6 +143,7 @@ function preloadImages() {
 
 /* ─── Init ─── */
 async function init() {
+    await checkVersion(); // Pastikan versi terbaru
     await fetchScenes();
     // Check for Pannellum library availability
     if (typeof pannellum === 'undefined') {

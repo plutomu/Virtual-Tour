@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"vite\"",
-    "start": "concurrently \"npm run server\" \"vite\"",
-    "build": "vite build",
+    "dev": "node update-version.js && concurrently \"npm run server\" \"vite\"",
+    "start": "node update-version.js && concurrently \"npm run server\" \"vite\"",
+    "prebuild": "node update-version.js",
+    "build": "npm run prebuild && vite build",
     "preview": "vite preview",
     "server": "node server.js"
   },
