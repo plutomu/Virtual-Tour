@@ -323,13 +323,8 @@ input:checked + .slider:before {
     left: 28px;
     z-index: 50;
     max-width: 440px;
-    background: #ffffff;
-    padding: 24px 30px;
-    border-radius: 28px;
-    box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.15),
-        0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: transparent;
+    padding: 0;
     pointer-events: none;
 }
 
@@ -340,18 +335,16 @@ input:checked + .slider:before {
     font-weight: 900;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #4f46e5;
-    background: rgba(79, 70, 229, 0.08);
-    padding: 6px 12px;
-    border-radius: 8px;
-    margin-bottom: 14px;
-    border: 1px solid rgba(79, 70, 229, 0.1);
+    color: #000000;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 12px;
 }
 
 #room-title {
     font-size: 32px;
     font-weight: 800;
-    color: #111827;
+    color: #000000;
     letter-spacing: -0.03em;
     line-height: 1.1;
     text-shadow: none;
@@ -362,8 +355,8 @@ input:checked + .slider:before {
 
 #room-desc {
     font-size: 13.5px;
-    font-weight: 500;
-    color: #4b5563;
+    font-weight: 600;
+    color: #000000;
     margin-top: 8px;
     line-height: 1.5;
     text-shadow: none;
