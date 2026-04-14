@@ -18,13 +18,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <meta name="theme-color" content="#000000">
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000 !important;
+            overflow: hidden;
+        }
+
         #panorama {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: #000000;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
