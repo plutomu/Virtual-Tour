@@ -65,11 +65,17 @@ async function fetchScenes() {
         // 2. Jika ada data baru, update & simpan ke cache
         if (JSON.stringify(freshScenes) !== JSON.stringify(scenes)) {
             scenes = freshScenes;
-            // Jalankan ulang init jika ini adalah pemuatan pertama kali yang tertunda
-            if (viewer && viewer.getScene() === null) {
-                init(); 
-            }
             console.log('🔄 Data tour diperbarui dari cloud');
+            
+            // Auto-refresh UI jika viewer sudah siap
+            if (viewer) {
+                const s = scenes[current];
+                if (s) {
+                    document.getElementById('room-title').textContent = s.title;
+                    document.getElementById('room-desc').textContent = s.desc || "";
+                    // Refresh hotspots jika memungkinkan atau biarkan navigasi berikutnya yang update
+                }
+            }
         }
 
         await setCache(freshScenes);
