@@ -188,6 +188,7 @@ async function init() {
 }
 
 /* ─── Change scene ─── */
+function changeScene(id) {
     // Jalankan efek zoom dash (zoom in + blur)
     const pano = document.getElementById('panorama');
     if (pano) pano.classList.add('zoom-dash');

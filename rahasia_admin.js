@@ -46,8 +46,16 @@ async function loadScenes() {
         console.log('💎 Data dimuat instan dari IndexedDB');
     }
 
+    const container = document.getElementById('sidebar-scene-list');
+    if (container && !container.innerHTML.trim()) {
+        container.innerHTML = '<div class="flex-1 flex flex-col items-center justify-center text-slate-300 gap-2"><i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i><span class="text-[10px] font-bold uppercase tracking-widest">Memuat...</span></div>';
+        if (window.lucide) lucide.createIcons();
+    }
+
     try {
-        const response = await fetch('/api/scenes');
+        const response = await fetch('/api/scenes', {
+            headers: { 'x-user-role': sessionStorage.getItem('userRole') || '' }
+        });
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || `Server error: ${response.status}`);
@@ -78,13 +86,13 @@ function updateSidebar() {
 
     counter.innerText = scenes.length;
     container.innerHTML = scenes.map(s => `
-        <button onclick="window.focusScene('${s.id}')" class="flex-none lg:w-full flex items-center gap-3 p-3 lg:p-4 rounded-3xl bg-transparent border border-transparent hover:border-indigo-200 hover:bg-white lg:hover:bg-slate-50 transition-all text-left group w-64 lg:w-auto">
-            <div class="w-14 h-14 lg:w-12 lg:h-12 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border border-white lg:border-slate-200 shadow-sm">
+        <button onclick="window.focusScene('${s.id}')" class="flex-none lg:w-full flex items-center gap-2 p-2 lg:p-4 rounded-2xl bg-transparent border border-transparent hover:border-indigo-200 hover:bg-white lg:hover:bg-slate-50 transition-all text-left group w-36 lg:w-auto">
+            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-white lg:border-slate-200 shadow-sm">
                 <img src="${s.image || 'https://placehold.co/100x100?text=360'}" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 overflow-hidden">
-                <p class="text-[13px] lg:text-[14px] font-black text-slate-800 truncate leading-tight">${s.title}</p>
-                <p class="text-[10px] font-bold text-slate-400 truncate opacity-60 uppercase">${s.id}</p>
+                <p class="text-[11px] lg:text-[14px] font-black text-slate-800 truncate leading-tight">${s.title}</p>
+                <p class="text-[8px] font-bold text-slate-400 truncate opacity-60 uppercase">${s.id}</p>
             </div>
             <i data-lucide="chevron-right" class="hidden lg:block w-4 h-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
         </button>
@@ -117,11 +125,10 @@ function initGraph() {
             imageUrl = `https://placehold.co/200x200/4f46e5/ffffff?text=${encodeURIComponent(s.id)}`;
         }
 
-        return {
+        const nodeObj = {
             id: s.id,
             label: s.title,
             shape: imageUrl ? 'circularImage' : 'dot',
-            image: imageUrl,
             color: { 
                 border: '#4f46e5', 
                 background: '#ffffff',
@@ -130,6 +137,12 @@ function initGraph() {
             size: 30,
             borderWidth: 3
         };
+
+        if (imageUrl) {
+            nodeObj.image = imageUrl;
+        }
+
+        return nodeObj;
     });
 
     const nodes = new vis.DataSet(nodesData);
@@ -230,12 +243,17 @@ window.editScene = (id) => {
 
     document.getElementById('form-title').innerText = 'Edit Ruangan';
     document.getElementById('scene-id').value = s.id;
+    // Antigravity: Role Check for Delete Button
+    const role = sessionStorage.getItem('userRole');
+    const deleteBtn = document.getElementById('delete-btn');
+    if (deleteBtn) {
+        if (role === 'superadmin') deleteBtn.classList.remove('hidden');
+        else deleteBtn.classList.add('hidden');
+    }
+
     document.getElementById('scene-id').disabled = true;
     document.getElementById('scene-title').value = s.title;
     document.getElementById('scene-desc').value = s.desc || '';
-    
-    // Antigravity: Status is now always active, so no need to set checkbox
-    // document.getElementById('scene-active').checked = !s.disabled;
     document.getElementById('scene-image-path').value = s.image;
 
     const preview = document.getElementById('upload-preview');
@@ -308,13 +326,18 @@ window.saveScene = async function() {
 
         // 2. SIAPKAN DATA RUANGAN
         if (!editingId) {
-            const newId = document.getElementById('scene-id').value.trim();
-            if (!newId) throw new Error('ID Ruangan wajib diisi!');
+            let newId = document.getElementById('scene-id').value.trim();
+            
+            // Antigravity: Auto-generate ID if empty (helpful for quick creation)
+            if (!newId) {
+                newId = 'scene_' + Math.random().toString(36).substring(2, 9);
+            }
+            
             if (scenes.find(x => x.id === newId)) throw new Error('ID sudah digunakan!');
             
             scenes.push({
                 id: newId,
-                title: document.getElementById('scene-title').value,
+                title: document.getElementById('scene-title').value || 'Tanpa Judul',
                 desc: document.getElementById('scene-desc').value,
                 image: imagePath,
                 disabled: false,
@@ -333,7 +356,10 @@ window.saveScene = async function() {
         // 3. SIMPAN KE DATABASE (POST ke /api/scenes)
         const saveRes = await fetch('/api/scenes', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-user-role': sessionStorage.getItem('userRole') || ''
+            },
             body: JSON.stringify(scenes)
         });
 
@@ -363,7 +389,10 @@ window.deleteScene = async () => {
     try {
         await fetch('/api/scenes', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-user-role': sessionStorage.getItem('userRole') || ''
+            },
             body: JSON.stringify(scenes)
         });
         loadScenes();
@@ -770,17 +799,17 @@ window.filterScenes = (query) => {
 window.showToast = (msg, isError = false) => {
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toast-message');
-    const toastIcon = toast.querySelector('.bg-emerald-500');
+    const toastIconBg = document.getElementById('toast-icon-bg');
     
     toastMsg.innerText = msg;
     
     // Warna Merah jika Error
     if (isError) {
-        toastIcon.classList.replace('bg-emerald-500', 'bg-rose-500');
-        toastIcon.classList.replace('shadow-[0_0_15px_rgba(16,185,129,0.4)]', 'shadow-[0_0_15px_rgba(244,63,94,0.4)]');
+        toastIconBg.classList.remove('bg-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+        toastIconBg.classList.add('bg-rose-500', 'shadow-[0_0_15px_rgba(244,63,94,0.4)]');
     } else {
-        toastIcon.classList.replace('bg-rose-500', 'bg-emerald-500');
-        toastIcon.classList.replace('shadow-[0_0_15px_rgba(244,63,94,0.4)]', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
+        toastIconBg.classList.remove('bg-rose-500', 'shadow-[0_0_15px_rgba(244,63,94,0.4)]');
+        toastIconBg.classList.add('bg-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.4)]');
     }
 
     toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4', 'scale-95');
@@ -794,8 +823,265 @@ window.showToast = (msg, isError = false) => {
 };
 
 window.onload = () => {
-    loadScenes();
+    // Check session
+    const username = sessionStorage.getItem('userName');
+    const role = sessionStorage.getItem('userRole');
+
+    if (username && role) {
+        document.getElementById('login-overlay').classList.add('hidden');
+        document.getElementById('current-user-name').innerText = username;
+        
+        const roleBadge = document.getElementById('current-user-role');
+        if (roleBadge) {
+            roleBadge.innerText = role;
+            if (role === 'superadmin') {
+                roleBadge.classList.replace('bg-slate-100', 'bg-indigo-600');
+                roleBadge.classList.replace('text-slate-400', 'text-white');
+            } else {
+                roleBadge.classList.replace('bg-slate-100', 'bg-slate-200');
+                roleBadge.classList.replace('text-slate-400', 'text-slate-600');
+            }
+        }
+
+        if (role === 'superadmin') {
+            const mBtn = document.getElementById('manage-users-btn');
+            const mmBtn = document.getElementById('mobile-manage-users-btn');
+            if (mBtn) mBtn.classList.remove('hidden');
+            if (mmBtn) mmBtn.classList.remove('hidden');
+            // Superadmin can see delete button
+            const deleteBtn = document.getElementById('delete-btn');
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+        } else {
+            // Admin only - hide delete and user management
+            document.getElementById('manage-users-btn').classList.add('hidden');
+            const mobileManageBtn = document.getElementById('mobile-manage-users-btn');
+            if (mobileManageBtn) mobileManageBtn.classList.add('hidden');
+            const deleteBtn = document.getElementById('delete-btn');
+            if (deleteBtn) deleteBtn.classList.add('hidden');
+        }
+        loadScenes();
+    }
+    
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+};
+
+window.processLogin = async () => {
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    const btn = document.querySelector('button[onclick="window.processLogin()"]');
+    const errorDiv = document.getElementById('login-error');
+
+    btn.disabled = true;
+    btn.innerText = "Authenticating...";
+    errorDiv.classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            sessionStorage.setItem('userName', data.user.username);
+            sessionStorage.setItem('userRole', data.user.role);
+            location.reload(); // Refresh to apply UI changes
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (e) {
+        errorDiv.innerText = e.message;
+        errorDiv.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Log In System";
+    }
+};
+
+window.processLogout = () => {
+    sessionStorage.clear();
+    location.reload();
+};
+
+window.togglePasswordVisibility = () => {
+    const passInput = document.getElementById('login-pass');
+    const icon = document.getElementById('pw-icon');
+    
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        passInput.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    if (window.lucide) lucide.createIcons();
+};
+
+window.toggleUserPasswordVisibility = () => {
+    const passInput = document.getElementById('user-password');
+    const icon = document.getElementById('user-pw-icon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        passInput.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    if (window.lucide) lucide.createIcons();
+};
+
+// USER MANAGEMENT CRUD
+window.showUserManagement = async () => {
+    document.getElementById('user-management-modal').classList.remove('hidden');
+    window.renderUserList();
+};
+
+window.closeUserManagement = () => {
+    document.getElementById('user-management-modal').classList.add('hidden');
+};
+
+window.renderUserList = async function() {
+    const container = document.getElementById('user-list-container');
+    container.innerHTML = '<p class="text-[10px] animate-pulse">Memuat data...</p>';
+
+    try {
+        const res = await fetch('/api/users', {
+            headers: { 'x-user-role': sessionStorage.getItem('userRole') }
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+            throw new Error(data.error || 'Gagal mengambil data user');
+        }
+
+        const users = data;
+        const badge = document.getElementById('user-count-badge');
+        if (badge) badge.innerText = `${users.length} TOTAL`;
+
+        container.innerHTML = users.map(u => `
+            <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-2xl group hover:border-indigo-200 transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i data-lucide="${u.role === 'superadmin' ? 'shield-check' : 'user'}" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-700">${u.username}</p>
+                        <p class="text-[8px] font-black text-indigo-500 uppercase tracking-widest">${u.role}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick='window.editUser(${JSON.stringify(u).replace(/'/g, "&apos;")})' class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all" title="Edit User">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </button>
+                    ${u.username !== sessionStorage.getItem('userName') ? `
+                    <button onclick="window.deleteUser('${u.username}')" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 rounded-xl hover:bg-rose-50 transition-all" title="Hapus User">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+        if (window.lucide) lucide.createIcons();
+    } catch (e) {
+        container.innerHTML = `
+            <div class="p-6 text-center">
+                <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                </div>
+                <p class="text-xs font-bold text-slate-700">Gagal Memuat User</p>
+                <p class="text-[10px] text-slate-400 mt-1">${e.message}</p>
+                <button onclick="window.renderUserList()" class="mt-4 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest">Coba Lagi</button>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+window.editUser = (user) => {
+    document.getElementById('user-username').value = user.username;
+    document.getElementById('user-username').disabled = true; // Username PK, tidak bisa diubah
+    document.getElementById('user-password').value = ''; // Kosongkan password agar user isi jika ingin ganti
+    document.getElementById('user-role').value = user.role;
+    
+    document.getElementById('user-form-title').innerText = 'Edit User';
+    document.getElementById('user-form-icon').setAttribute('data-lucide', 'user-cog');
+    document.getElementById('btn-save-user').innerText = 'Update Akun';
+    document.getElementById('btn-cancel-edit-user').classList.remove('hidden');
+    
+    if (window.lucide) lucide.createIcons();
+};
+
+window.resetUserForm = () => {
+    document.getElementById('user-username').value = '';
+    document.getElementById('user-username').disabled = false;
+    document.getElementById('user-password').value = '';
+    document.getElementById('user-role').value = 'admin';
+    
+    document.getElementById('user-form-title').innerText = 'Tambah User Baru';
+    document.getElementById('user-form-icon').setAttribute('data-lucide', 'user-plus');
+    document.getElementById('btn-save-user').innerText = 'Simpan Akun';
+    document.getElementById('btn-cancel-edit-user').classList.add('hidden');
+    
+    if (window.lucide) lucide.createIcons();
+};
+
+window.saveUser = async () => {
+    const username = document.getElementById('user-username').value;
+    const password = document.getElementById('user-password').value;
+    const role = document.getElementById('user-role').value;
+
+    if (!username) return alert('Username wajib diisi!');
+    // Jika password kosong saat edit, berarti tidak ganti password.
+    // Tapi jika tambah baru, wajib diisi.
+    const isEdit = document.getElementById('user-username').disabled;
+    if (!isEdit && !password) return alert('Password wajib diisi!');
+
+    try {
+        const body = { username, role };
+        if (password) body.password = password;
+
+        const res = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-user-role': sessionStorage.getItem('userRole')
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            window.showToast(isEdit ? 'Akun berhasil diperbarui!' : 'Akun berhasil dibuat!');
+            window.resetUserForm();
+            window.renderUserList();
+        } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Gagal menyimpan user');
+        }
+    } catch (e) { 
+        window.showToast('Gagal: ' + e.message, true);
+    }
+};
+
+window.deleteUser = async (uname) => {
+    if (!confirm(`Hapus user ${uname}?`)) return;
+
+    try {
+        const res = await fetch(`/api/users/${uname}`, {
+            method: 'DELETE',
+            headers: { 'x-user-role': sessionStorage.getItem('userRole') }
+        });
+
+        if (res.ok) {
+            window.showToast('User berhasil dihapus!');
+            window.renderUserList();
+        } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Gagal menghapus user');
+        }
+    } catch (e) { 
+        window.showToast('Gagal: ' + e.message, true);
     }
 };
