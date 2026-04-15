@@ -90,14 +90,14 @@ function updateSidebar() {
         const isActive = s.id === focusedId;
         return `
         <button onclick="window.focusScene('${s.id}')" 
-            class="scene-card w-full md:w-full flex items-center gap-3 p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border transition-all text-left group mb-3 last:mb-0 min-w-0 ${isActive ? 'active bg-white border-indigo-600 shadow-xl' : 'bg-transparent border-transparent hover:bg-white/60 hover:border-slate-100'}">
-            <div class="w-12 h-12 md:w-16 md:h-16 rounded-[1.2rem] md:rounded-[1.5rem] overflow-hidden bg-slate-100 shrink-0 border-2 border-white shadow-inner relative group-hover:scale-105 transition-transform">
+            class="scene-card flex-none w-[220px] md:w-full flex items-center gap-3 p-2.5 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border transition-all text-left group md:mb-3 md:last:mb-0 min-w-0 ${isActive ? 'active bg-white border-indigo-600 shadow-xl' : 'bg-transparent border-transparent hover:bg-white/60 hover:border-slate-100'}">
+            <div class="w-12 h-12 md:w-16 md:h-16 rounded-full md:rounded-[1.5rem] overflow-hidden bg-slate-100 shrink-0 border-2 border-white shadow-inner relative group-hover:scale-105 transition-transform">
                 <img src="${s.image || 'https://placehold.co/100x100?text=360'}" class="w-full h-full object-cover">
                 ${isActive ? '<div class="absolute inset-0 bg-indigo-600/10 flex items-center justify-center"><div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div></div>' : ''}
             </div>
             <div class="flex-1 min-w-0 pr-4">
                 <p class="text-[12px] md:text-[15px] font-extrabold text-slate-800 truncate leading-tight mb-1">${s.title}</p>
-                <div class="flex items-center gap-1.5">
+                <div class="hidden md:flex items-center gap-1.5">
                     <span class="text-[8px] md:text-[10px] font-black text-slate-400 truncate opacity-60 uppercase tracking-widest">${s.id}</span>
                 </div>
             </div>
