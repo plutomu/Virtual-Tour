@@ -1,5 +1,6 @@
 let scenes = [];
 let network = null;
+let focusedId = null;
 let editingId = null;
 let pickerViewer = null;
 let quickPreviewViewer = null;
@@ -85,28 +86,39 @@ function updateSidebar() {
     if (!container) return;
 
     counter.innerText = scenes.length;
-    container.innerHTML = scenes.map(s => `
-        <button onclick="window.focusScene('${s.id}')" class="flex-none lg:w-full flex items-center gap-2 p-2 lg:p-4 rounded-2xl bg-transparent border border-transparent hover:border-indigo-200 hover:bg-white lg:hover:bg-slate-50 transition-all text-left group w-36 lg:w-auto">
-            <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-white lg:border-slate-200 shadow-sm">
+    container.innerHTML = scenes.map(s => {
+        const isActive = s.id === focusedId;
+        return `
+        <button onclick="window.focusScene('${s.id}')" 
+            class="scene-card w-full md:w-full flex items-center gap-3 p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border transition-all text-left group mb-3 last:mb-0 min-w-0 ${isActive ? 'active bg-white border-indigo-600 shadow-xl' : 'bg-transparent border-transparent hover:bg-white/60 hover:border-slate-100'}">
+            <div class="w-12 h-12 md:w-16 md:h-16 rounded-[1.2rem] md:rounded-[1.5rem] overflow-hidden bg-slate-100 shrink-0 border-2 border-white shadow-inner relative group-hover:scale-105 transition-transform">
                 <img src="${s.image || 'https://placehold.co/100x100?text=360'}" class="w-full h-full object-cover">
+                ${isActive ? '<div class="absolute inset-0 bg-indigo-600/10 flex items-center justify-center"><div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div></div>' : ''}
             </div>
-            <div class="flex-1 overflow-hidden">
-                <p class="text-[11px] lg:text-[14px] font-black text-slate-800 truncate leading-tight">${s.title}</p>
-                <p class="text-[8px] font-bold text-slate-400 truncate opacity-60 uppercase">${s.id}</p>
+            <div class="flex-1 min-w-0 pr-4">
+                <p class="text-[12px] md:text-[15px] font-extrabold text-slate-800 truncate leading-tight mb-1">${s.title}</p>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[8px] md:text-[10px] font-black text-slate-400 truncate opacity-60 uppercase tracking-widest">${s.id}</span>
+                </div>
             </div>
-            <i data-lucide="chevron-right" class="hidden lg:block w-4 h-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+            <div class="hidden md:flex w-8 h-8 shrink-0 items-center justify-center rounded-xl bg-slate-50 opacity-0 group-hover:opacity-100 transition-all text-indigo-400">
+                <i data-lucide="arrow-right-circle" class="w-4.5 h-4.5"></i>
+            </div>
         </button>
-    `).join('');
+        `;
+    }).join('');
     
     if (window.lucide) window.lucide.createIcons();
 }
 
 window.focusScene = (id) => {
+    focusedId = id;
     if (network) {
         network.focus(id, { scale: 1.2, animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
         network.selectNodes([id]);
         window.editScene(id);
     }
+    updateSidebar();
 };
 
 window.zoomToFit = () => {
@@ -828,8 +840,11 @@ window.onload = () => {
     const role = sessionStorage.getItem('userRole');
 
     if (username && role) {
-        document.getElementById('login-overlay').classList.add('hidden');
-        document.getElementById('current-user-name').innerText = username;
+        const loginOverlay = document.getElementById('login-overlay');
+        if (loginOverlay) loginOverlay.classList.add('hidden');
+        
+        const desktopName = document.getElementById('current-user-name');
+        if (desktopName) desktopName.innerText = username;
         
         const roleBadge = document.getElementById('current-user-role');
         if (roleBadge) {
@@ -843,19 +858,30 @@ window.onload = () => {
             }
         }
 
+        // Populate User Info (Mobile)
+        const mobileName = document.getElementById('mobile-user-name');
+        if (mobileName) mobileName.innerText = username;
+        const mobileRole = document.getElementById('mobile-user-role');
+        if (mobileRole) mobileRole.innerText = role;
+        const mobileInitial = document.getElementById('mobile-user-initial');
+        if (mobileInitial) mobileInitial.innerText = username.charAt(0).toUpperCase();
+
         if (role === 'superadmin') {
             const mBtn = document.getElementById('manage-users-btn');
             const mmBtn = document.getElementById('mobile-manage-users-btn');
+            const mDiv = document.getElementById('manage-users-divider');
             if (mBtn) mBtn.classList.remove('hidden');
             if (mmBtn) mmBtn.classList.remove('hidden');
-            // Superadmin can see delete button
+            if (mDiv) mDiv.classList.remove('hidden');
+            
             const deleteBtn = document.getElementById('delete-btn');
             if (deleteBtn) deleteBtn.classList.remove('hidden');
         } else {
-            // Admin only - hide delete and user management
-            document.getElementById('manage-users-btn').classList.add('hidden');
-            const mobileManageBtn = document.getElementById('mobile-manage-users-btn');
-            if (mobileManageBtn) mobileManageBtn.classList.add('hidden');
+            const mBtn = document.getElementById('manage-users-btn');
+            const mmBtn = document.getElementById('mobile-manage-users-btn');
+            if (mBtn) mBtn.classList.add('hidden');
+            if (mmBtn) mmBtn.classList.add('hidden');
+            
             const deleteBtn = document.getElementById('delete-btn');
             if (deleteBtn) deleteBtn.classList.add('hidden');
         }

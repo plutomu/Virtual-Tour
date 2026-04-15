@@ -30,7 +30,28 @@
     <style>
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 0; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Premium Card Transitions */
+        .scene-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .scene-card:hover {
+            transform: translateY(-2px);
+        }
+        .scene-card.active {
+            background: white !important;
+            border-color: #4f46e5 !important;
+            box-shadow: 0 20px 25px -5px rgb(79 70 229 / 0.1), 0 8px 10px -6px rgb(79 70 229 / 0.1) !important;
+        }
+        
+        /* Glassmorphism Sidebar Header */
+        .sidebar-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
         /* Custom Red Dot for Picker */
         .picker-red-dot {
             width: 20px;
@@ -43,6 +64,17 @@
             pointer-events: none;
         }
     </style>
+    <!-- Anti-Flash Login Shield -->
+    <script>
+        (function() {
+            if (sessionStorage.getItem('userName') && sessionStorage.getItem('userRole')) {
+                document.documentElement.classList.add('is-authenticated');
+                const style = document.createElement('style');
+                style.innerHTML = '#login-overlay { display: none !important; }';
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
 </head>
 <body class="bg-slate-50 font-['Outfit'] overflow-hidden">
     <!-- Login Overlay -->
@@ -78,12 +110,12 @@
     
 
     <!-- Main Wrapper -->
-    <div class="flex flex-col lg:flex-row h-screen">
+    <div class="flex flex-col md:flex-row h-screen">
         
         <!-- Workspace (Map) -->
-        <main class="flex-1 relative bg-[#fcfdff] overflow-hidden order-1 lg:order-2">
+        <main class="flex-1 relative bg-[#fcfdff] overflow-hidden order-1 md:order-2">
             <!-- Canvas Tools Overlay (Desktop) -->
-            <div class="hidden lg:flex absolute top-8 right-8 gap-2 items-center pointer-events-none z-10 transition-all">
+            <div class="hidden md:flex absolute top-8 right-8 gap-2 items-center pointer-events-none z-10 transition-all">
                 <div class="flex gap-1.5 pointer-events-auto items-center p-1.5 bg-white/40 backdrop-blur-md rounded-2xl border border-slate-200 shadow-xl">
                     <button onclick="window.showNewSceneForm()" title="Tambah Ruangan" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-indigo-100 active:scale-90">
                         <i data-lucide="plus" class="w-4 h-4"></i>
@@ -100,23 +132,16 @@
                 </div>
             </div>
 
-            <!-- Desktop Floating Controls -->
-            <div class="hidden lg:flex absolute top-8 left-8 gap-3 items-center pointer-events-none z-[100]">
-                <div class="flex items-center gap-3 p-1.5 bg-white/60 backdrop-blur-xl rounded-[1.5rem] border border-slate-200/50 shadow-2xl pointer-events-auto">
-                    <!-- User Info & Logout -->
-                    <div class="flex items-center gap-3 pl-4 pr-2 py-1">
-                        <div class="flex flex-col">
-                            <span id="current-user-name" class="text-[10px] font-black text-slate-900 uppercase leading-tight">Admin</span>
-                            <span id="current-user-role" class="text-[7px] font-black text-indigo-600 uppercase tracking-widest leading-none mt-0.5 text-center">Superadmin</span>
-                        </div>
-                        <div class="w-px h-6 bg-slate-200/60 mx-1"></div>
-                        <button onclick="window.processLogout()" class="w-9 h-9 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title="Logout">
-                            <i data-lucide="log-out" class="w-4.5 h-4.5"></i>
-                        </button>
-                    </div>
+            <!-- Desktop Floating Controls (Minimal Icons) -->
+            <div class="hidden md:flex absolute top-8 left-8 gap-2 items-center pointer-events-none z-[100]">
+                <div class="flex items-center gap-2 p-2 bg-white/60 backdrop-blur-xl rounded-[1.2rem] border border-slate-200/50 shadow-2xl pointer-events-auto">
                     <!-- Kelola User Button -->
-                    <button id="manage-users-btn" onclick="window.showUserManagement()" class="hidden w-11 h-11 bg-slate-900 hover:bg-black text-white rounded-2xl flex items-center justify-center transition-all shadow-lg active:scale-95" title="Kelola User">
-                        <i data-lucide="users" class="w-5 h-5"></i>
+                    <button id="manage-users-btn" onclick="window.showUserManagement()" class="hidden w-10 h-10 bg-slate-900 hover:bg-black text-white rounded-xl flex items-center justify-center transition-all shadow-lg active:scale-95" title="Kelola User">
+                        <i data-lucide="users" class="w-4.5 h-4.5"></i>
+                    </button>
+                    <div id="manage-users-divider" class="hidden w-px h-6 bg-slate-200/60 mx-1"></div>
+                    <button onclick="window.processLogout()" class="w-10 h-10 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title="Logout">
+                        <i data-lucide="log-out" class="w-4.5 h-4.5"></i>
                     </button>
                 </div>
             </div>
@@ -127,31 +152,36 @@
         </main>
 
         <!-- Sidebar / Bottom Dock -->
-        <aside id="main-sidebar" class="w-full lg:w-80 h-auto max-h-[45vh] lg:h-full bg-white border-t lg:border-t-0 lg:border-r border-slate-200 flex flex-col z-50 order-2 lg:order-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] lg:shadow-none overflow-hidden">
+        <aside id="main-sidebar" class="w-full md:w-[360px] h-auto max-h-[45vh] md:h-full md:max-h-none bg-slate-50 border-t md:border-t-0 md:border-r border-slate-200 flex flex-col z-50 order-2 md:order-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] md:shadow-none overflow-visible">
             
-            <!-- Desktop Header -->
-            <div class="hidden lg:block p-8 pb-1">
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Ruangan</h2>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Global <span id="scene-count" class="text-indigo-600">0</span> Lokasi</p>
+            <!-- Desktop Header (Premium) -->
+            <div class="hidden md:block px-6 py-8 pb-4 sidebar-header border-b border-slate-100">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-1.5 h-6 bg-indigo-600 rounded-full"></div>
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Katalog Ruangan</h2>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    Total <span id="scene-count" class="px-2 py-0.5 bg-indigo-600 text-white rounded-lg inline-block">0</span> Lokasi Virtual
+                </p>
             </div>
 
             <!-- Search Bar (Visible on Mobile & Desktop) -->
-            <div class="px-4 lg:px-8 py-2">
+            <div class="px-6 py-4">
                 <div class="relative group">
                     <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600 transition-colors"></i>
                     <input type="text" id="scene-search" placeholder="Cari ruangan..." 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-1.5 lg:py-2.5 pl-9 pr-4 text-[11px] lg:text-[13px] font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all shadow-sm"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-1.5 md:py-2.5 pl-9 pr-4 text-[11px] md:text-[13px] font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all shadow-sm"
                         oninput="window.filterScenes(this.value)">
                 </div>
             </div>
 
             <!-- Scene List: Horizontal Scroller on Mobile, Vertical on Desktop -->
-            <div id="sidebar-scene-list" class="flex-1 flex lg:flex-col items-center lg:items-stretch gap-3 p-3 lg:p-6 overflow-x-auto overflow-y-hidden lg:overflow-y-auto custom-scrollbar scroll-smooth">
+            <div id="sidebar-scene-list" class="flex-1 w-full flex md:grid md:grid-cols-1 gap-3 p-4 md:p-6 overflow-x-auto md:overflow-x-hidden overflow-y-hidden md:overflow-y-auto custom-scrollbar scroll-smooth">
                 <!-- Scenes will be injected here -->
             </div>
 
             <!-- Mobile Integrated Admin Hub (Bottom Only) - Made more compact -->
-            <div class="lg:hidden bg-slate-50 border-t border-slate-200 p-3 space-y-3">
+            <div class="md:hidden bg-slate-50 border-t border-slate-200 p-3 space-y-3">
                 <!-- Row 1: Profile & System Actions -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -159,8 +189,8 @@
                             <span id="mobile-user-initial">A</span>
                         </div>
                         <div class="flex flex-col">
-                            <span id="mobile-user-name" class="text-[9px] font-black text-slate-900 uppercase leading-none">Admin</span>
-                            <span id="mobile-user-role" class="text-[6px] font-black text-indigo-500 uppercase tracking-widest leading-none mt-0.5">Superadmin</span>
+                            <span id="mobile-user-name" class="text-[9px] font-black text-slate-900 leading-none">Admin</span>
+                            <span id="mobile-user-role" class="text-[6px] font-black text-indigo-500 tracking-widest leading-none mt-0.5">Superadmin</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -177,19 +207,19 @@
                 <div class="grid grid-cols-4 gap-1.5">
                     <button onclick="window.showNewSceneForm()" class="flex flex-col items-center justify-center gap-1 p-2 bg-indigo-600 text-white rounded-xl active:scale-95 transition-all shadow-lg shadow-indigo-100/50">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                        <span class="text-[6px] font-black uppercase tracking-widest">Tambah</span>
+                        <span class="text-[6px] font-black tracking-widest">Tambah</span>
                     </button>
                     <button onclick="window.openQuickPreview()" class="flex flex-col items-center justify-center gap-1 p-2 bg-white border border-slate-100 text-slate-600 rounded-xl active:scale-95 transition-all">
                         <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                        <span class="text-[6px] font-black uppercase tracking-widest">Lihat</span>
+                        <span class="text-[6px] font-black tracking-widest">Lihat</span>
                     </button>
                     <button onclick="window.zoomToFit()" class="flex flex-col items-center justify-center gap-1 p-2 bg-white border border-slate-100 text-slate-400 rounded-xl active:scale-95 transition-all">
                         <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
-                        <span class="text-[6px] font-black uppercase tracking-widest">Fit</span>
+                        <span class="text-[6px] font-black tracking-widest">Fit</span>
                     </button>
                     <button onclick="window.loadScenes()" class="flex flex-col items-center justify-center gap-1 p-2 bg-white border border-slate-100 text-slate-400 rounded-xl active:scale-95 transition-all">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                        <span class="text-[6px] font-black uppercase tracking-widest">Sync</span>
+                        <span class="text-[6px] font-black tracking-widest">Sync</span>
                     </button>
                 </div>
             </div>
@@ -202,7 +232,7 @@
     <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] hidden" onclick="closeForm()"></div>
 
     <!-- Edit Modal (Right Side / Full Mobile) -->
-    <div id="scene-form-modal" class="fixed top-0 right-0 h-full w-full lg:max-w-[380px] bg-white z-[70] translate-x-full transition-transform duration-500 ease-in-out shadow-[-20px_0_60px_rgba(0,0,0,0.1)] border-l border-slate-100 flex flex-col">
+    <div id="scene-form-modal" class="fixed top-0 right-0 h-full w-full md:max-w-[380px] bg-white z-[70] translate-x-full transition-transform duration-500 ease-in-out shadow-[-20px_0_60px_rgba(0,0,0,0.1)] border-l border-slate-100 flex flex-col">
         <div class="p-6 border-b border-slate-50 flex justify-between items-center">
             <div>
                 <h3 id="form-title" class="text-lg font-black text-slate-900 leading-tight">Edit Ruangan</h3>
@@ -295,10 +325,10 @@
 
 
             <!-- Title Overlay (Cinematic Info - Calibrated) -->
-            <div class="absolute bottom-6 left-8 lg:left-12 max-w-xl pointer-events-none z-10 select-none">
-                <p id="preview-org" class="text-white text-[12px] lg:text-[15px] font-extrabold uppercase tracking-[0.12em] mb-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] opacity-90">DINAS TENAGA KERJA PROV. JATENG</p>
-                <h1 id="preview-title" class="text-white text-3xl lg:text-[36px] font-bold mb-2 drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] leading-tight tracking-[-0.04em]">Pintu Masuk Utama</h1>
-                <p id="preview-desc" class="text-white text-xs lg:text-[14px] font-medium max-w-md drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] leading-relaxed opacity-90">Akses utama menuju Ruang Layanan.</p>
+            <div class="absolute bottom-6 left-8 md:left-12 max-w-xl pointer-events-none z-10 select-none">
+                <p id="preview-org" class="text-white text-[12px] md:text-[15px] font-extrabold uppercase tracking-[0.12em] mb-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] opacity-90">DINAS TENAGA KERJA PROV. JATENG</p>
+                <h1 id="preview-title" class="text-white text-3xl md:text-[36px] font-bold mb-2 drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)] leading-tight tracking-[-0.04em]">Pintu Masuk Utama</h1>
+                <p id="preview-desc" class="text-white text-xs md:text-[14px] font-medium max-w-md drop-shadow-[0_2px_15px_rgba(0,0,0,0.8)] leading-relaxed opacity-90">Akses utama menuju Ruang Layanan.</p>
                 
                 <!-- Facility List overlay -->
                 <div id="preview-facilities" class="mt-8 flex flex-wrap gap-2 pointer-events-none">
@@ -357,9 +387,9 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <div class="grid lg:grid-cols-2 gap-8">
+                <div class="grid md:grid-cols-2 gap-8">
                     <!-- Daftar User (Muncul Pertama di Mobile) -->
-                    <div class="order-1 lg:order-2 space-y-4">
+                    <div class="order-1 md:order-2 space-y-4">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Daftar Akun Terdaftar</h4>
                             <span class="px-2 py-0.5 bg-slate-100 text-[8px] font-black text-slate-400 rounded-full uppercase tracking-tighter" id="user-count-badge">---</span>
@@ -370,7 +400,7 @@
                     </div>
 
                     <!-- Form Tambah/Edit User (Muncul Kedua di Mobile) -->
-                    <div class="order-2 lg:order-1 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 flex flex-col">
+                    <div class="order-2 md:order-1 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 flex flex-col">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
                                 <i data-lucide="user-plus" class="w-5 h-5" id="user-form-icon"></i>
