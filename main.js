@@ -260,7 +260,6 @@ function loadScene(id) {
         // Tetap tampilkan info bar
         document.getElementById('room-title').innerText = s.title;
         document.getElementById('room-desc').innerText = "Ruangan ini akan segera dapat diakses publik.";
-        renderArrows(s);
         
         if (flash) {
             flash.style.opacity = '0';

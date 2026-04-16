@@ -88,11 +88,14 @@ function updateSidebar() {
     counter.innerText = scenes.length;
     container.innerHTML = scenes.map(s => {
         const isActive = s.id === focusedId;
+        const imageUrl = (s.image && !s.image.startsWith('assets/')) 
+                         ? s.image 
+                         : `https://placehold.co/100x100?text=360`;
         return `
         <button onclick="window.focusScene('${s.id}')" 
             class="scene-card flex-none w-[220px] md:w-full flex items-center gap-3 p-2.5 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border transition-all text-left group md:mb-3 md:last:mb-0 min-w-0 ${isActive ? 'active bg-white border-indigo-600 shadow-xl' : 'bg-transparent border-transparent hover:bg-white/60 hover:border-slate-100'}">
             <div class="w-12 h-12 md:w-16 md:h-16 rounded-full md:rounded-[1.5rem] overflow-hidden bg-slate-100 shrink-0 border-2 border-white shadow-inner relative group-hover:scale-105 transition-transform">
-                <img src="${s.image || 'https://placehold.co/100x100?text=360'}" class="w-full h-full object-cover">
+                <img src="${imageUrl}" class="w-full h-full object-cover">
                 ${isActive ? '<div class="absolute inset-0 bg-indigo-600/10 flex items-center justify-center"><div class="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div></div>' : ''}
             </div>
             <div class="flex-1 min-w-0 pr-4">
@@ -132,8 +135,8 @@ function initGraph() {
     const nodesData = scenes.map(s => {
         let imageUrl = s.image || '';
         
-        // Anti-404: Jika link masih link lokal lama, tampilkan placeholder agar tidak kosong
-        if (imageUrl.startsWith('assets/')) {
+        // Anti-404: Jika link masih link lokal lama ATAU kosong, tampilkan placeholder agar tidak kosong/dot
+        if (!imageUrl || imageUrl.startsWith('assets/')) {
             imageUrl = `https://placehold.co/200x200/4f46e5/ffffff?text=${encodeURIComponent(s.id)}`;
         }
 

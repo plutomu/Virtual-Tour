@@ -168,9 +168,9 @@ app.post('/api/scenes', async (req, res) => {
         // Map frontend fields to database fields
         const mappedScenes = scenes.map(s => ({
             id: s.id,
-            name: s.title,
-            panorama: s.image,
-            links: s.connections || {},
+            title: s.title,
+            image: s.image,
+            connections: s.connections || {},
             desc: s.desc || ''
         }));
 
@@ -196,9 +196,9 @@ app.put('/api/scenes', async (req, res) => {
         // Map frontend fields to database fields
         const mappedScenes = scenes.map(s => ({
             id: s.id,
-            name: s.title,
-            panorama: s.image,
-            links: s.connections || {},
+            title: s.title,
+            image: s.image,
+            connections: s.connections || {},
             desc: s.desc || ''
         }));
 

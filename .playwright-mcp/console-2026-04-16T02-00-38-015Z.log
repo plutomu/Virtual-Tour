@@ -1,0 +1,7 @@
+[     187ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[     770ms] [LOG] 🔄 Data tour diperbarui dari cloud @ http://localhost:5173/main.js:94
+[     792ms] ReferenceError: renderArrows is not defined
+    at loadScene (http://localhost:5173/main.js:263:9)
+    at init (http://localhost:5173/main.js:186:5)
+[  104047ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  104166ms] [LOG] 💎 Data tour dimuat instan dari cache lokal @ http://localhost:5173/main.js:77

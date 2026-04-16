@@ -1,0 +1,5 @@
+[     153ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[     213ms] [LOG] 💎 Data tour dimuat instan dari cache lokal @ http://localhost:5173/main.js:77
+[  398620ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  398775ms] [LOG] 🚀 New build detected (2026-04-16T02:08:19.449Z). Clearing cache... @ http://localhost:5173/main.js:22
+[  398988ms] [LOG] 🔄 Data tour diperbarui dari cloud @ http://localhost:5173/main.js:94
