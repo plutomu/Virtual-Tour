@@ -186,39 +186,48 @@ function initGraph() {
         nodes: { 
             size: 30, 
             borderWidth: 4, 
-            font: { face: 'Inter', size: 12, color: '#444' } 
+            font: { face: 'Inter', size: 12, color: '#444', background: '#ffffffcc' } 
         },
         edges: { 
             width: 2, 
             smooth: { type: 'curvedCW', roundness: 0.2 },
-            color: { inherit: 'from' }
+            color: { inherit: 'from', opacity: 0.4 }
         },
         physics: { 
             enabled: true,
+            solver: 'forceAtlas2Based',
+            forceAtlas2Based: {
+                gravitationalConstant: -50,
+                centralGravity: 0.01,
+                springLength: 100,
+                springConstant: 0.08,
+                damping: 0.4
+            },
             stabilization: {
                 enabled: true,
-                iterations: 1000,
-                updateInterval: 50
-            },
-            barnesHut: { 
-                gravitationalConstant: -2000, 
-                centralGravity: 0.3, 
-                springLength: 150 
-            } 
+                iterations: 200,
+                updateInterval: 25
+            }
         },
-        interaction: { hover: true, tooltipDelay: 200 }
+        interaction: { 
+            dragNodes: true,
+            hover: true, 
+            tooltipDelay: 200,
+            multiselect: false
+        }
     };
 
     network = new vis.Network(container, data, options);
 
-    // Antigravity: Matikan fisika setelah stabil agar tidak leg
+    // Antigravity: Begitu selesai di-load, matikan fisika.
+    // Jika fisika dinyalakan lagi saat di-drag, seluruh Peta akan mengatur ulang posisinya (jadi kacau).
     network.once("stabilizationIterationsDone", function () {
         network.setOptions({ physics: false });
-        console.log('✅ Peta dikunci (Mode Performa)');
     });
 
-    // Logika Trigger Edit (Instan & Akurat untuk Desktop & Mobile)
+    // Logika Trigger Edit
     const handleNodeSelection = (params) => {
+        // Deteksi apakah ini murni klik, bukan akhir dari drag
         if (params.nodes.length > 0) {
             const nodeId = params.nodes[0];
             // Zoom sedikit untuk feedback visual
@@ -229,9 +238,10 @@ function initGraph() {
         }
     };
 
+    // Hanya gunakan 'click' (klik biasa tanpa geser) agar sekadar menahan/menggeser (drag) tidak langsung membuka menu Edit
     network.on('click', handleNodeSelection);
-    network.on('selectNode', handleNodeSelection);
-    network.on('hold', handleNodeSelection); // Tambahan untuk touch yang lebih lama sedikit
+    network.on('doubleClick', handleNodeSelection);
+    // Kita menonaktifkan 'selectNode' karena itu langsung tertrigger saat pertama ditekan (mouse down) yang akan tabrakan dengan geser.
 }
 
 window.showNewSceneForm = () => {
