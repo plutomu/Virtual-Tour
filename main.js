@@ -134,10 +134,9 @@ function preloadAdjacentScenes(sceneId) {
     const s = scenes[sceneId];
     if (!s || !s.connections) return;
 
-    Object.values(s.connections).forEach(conn => {
+    Object.values(s.connections || {}).forEach(conn => {
         const target = scenes[conn.target];
         if (target && target.image && !imageCache[target.image]) {
-            console.log(`📡 Speculative preload: ${target.title}`);
             const img = new Image();
             img.src = target.image;
             imageCache[target.image] = img;
@@ -230,8 +229,8 @@ function loadScene(id) {
         flash.innerHTML = ''; 
     }
 
-    // Antigravity: Cek apakah foto sudah ada di Cloud (Coming Soon Mode)
-    const isComingSoon = !s.image || s.image.startsWith('assets/');
+    // Antigravity: Cek apakah foto kosong (Coming Soon Mode)
+    const isComingSoon = !s.image;
 
     if (isComingSoon) {
         if (viewer) viewer.destroy();
@@ -364,7 +363,9 @@ function getHotspots(sceneId) {
         if (c.pitch !== undefined) hPitch = c.pitch;
 
         const targetData = scenes[c.target];
-        const isComingSoon = !targetData || !targetData.image || targetData.image.startsWith('assets/');
+        
+        // Custom Hotspot Style based on design
+        const isComingSoon = !targetData || !targetData.image;
         
         // Antigravity: Hilangkan tanda panah jika tujuannya belum siap (Coming Soon)
         if (isComingSoon) return;

@@ -218,13 +218,13 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         if (!req.file) return res.status(400).send('No file uploaded.');
 
         const file = req.file;
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
 
         // Langsung upload ke storage karena sudah dikompres di browser
         const { data, error } = await supabase.storage
             .from('panoramas')
             .upload(fileName, file.buffer, {
-                contentType: 'image/jpeg',
+                contentType: 'image/webp',
                 upsert: true
             });
 

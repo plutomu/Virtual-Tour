@@ -5,3 +5,96 @@
 [     328ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
 [     477ms] [LOG] 🔄 Data diperbarui dari server @ http://localhost:5173/rahasia_admin.js:70
 [     480ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  260824ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  260978ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  260978ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  261029ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  261059ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  307848ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  308025ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  308025ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  308073ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  308115ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  320406ms] [ERROR] WebSocket connection to 'ws://localhost:5173/?token=OSUXvkP_P4LS' failed:  @ http://localhost:5173/@vite/client:535
+[  320407ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5173/@vite/client:559
+[  321413ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  322418ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  323424ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  324429ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  325434ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  326437ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  327441ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  328445ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  329449ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0
+[  330576ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  330714ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  330714ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  330738ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  330758ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  443096ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  443220ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  443220ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  443248ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  443268ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  443852ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  443923ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  443923ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  443945ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  443969ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  444012ms] [ERROR] Failed to load scenes: TypeError: Failed to fetch
+    at loadScenes (http://localhost:5173/rahasia_admin.js:57:32) @ http://localhost:5173/rahasia_admin.js:77
+[  444019ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  444073ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  444073ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  444092ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  444111ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  493704ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  493774ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  493774ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  493809ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  493834ms] [ERROR] Could not load image: assets/halaman/halaman.jpg @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493835ms] [WARNING] No broken url image defined @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [ERROR] Could not load image: assets/pintu_masuk/pintu_masuk.jpg @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [WARNING] No broken url image defined @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [ERROR] Could not load image: assets/gedung_a/gedung_a.jpg @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [WARNING] No broken url image defined @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [ERROR] Could not load image: assets/layanan/layanan.jpg @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493836ms] [WARNING] No broken url image defined @ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js:32
+[  493839ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  494053ms] [LOG] 🔄 Data diperbarui dari server @ http://localhost:5173/rahasia_admin.js:70
+[  494063ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  505656ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  505810ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  505810ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  505846ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  505872ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  517505ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  517613ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  517613ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  517636ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  517659ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  528953ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  529027ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  529027ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  529058ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  529082ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  564570ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  564688ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  564688ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  564731ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  564761ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  605518ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  605675ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  605675ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  605710ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  605738ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  611934ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  612022ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  612022ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  612044ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  612071ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216
+[  622851ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  622916ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  622916ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
+[  622942ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  622968ms] [LOG] ✅ Peta dikunci (Mode Performa) @ http://localhost:5173/rahasia_admin.js:216

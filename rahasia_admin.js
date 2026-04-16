@@ -88,7 +88,7 @@ function updateSidebar() {
     counter.innerText = scenes.length;
     container.innerHTML = scenes.map(s => {
         const isActive = s.id === focusedId;
-        const imageUrl = (s.image && !s.image.startsWith('assets/')) 
+        const imageUrl = s.image 
                          ? s.image 
                          : `https://placehold.co/100x100?text=360`;
         return `
@@ -135,8 +135,8 @@ function initGraph() {
     const nodesData = scenes.map(s => {
         let imageUrl = s.image || '';
         
-        // Anti-404: Jika link masih link lokal lama ATAU kosong, tampilkan placeholder agar tidak kosong/dot
-        if (!imageUrl || imageUrl.startsWith('assets/')) {
+        // Anti-404: Jika kosong, tampilkan placeholder agar tidak kosong/dot
+        if (!imageUrl) {
             imageUrl = `https://placehold.co/200x200/4f46e5/ffffff?text=${encodeURIComponent(s.id)}`;
         }
 
@@ -318,12 +318,13 @@ window.saveScene = async function() {
                     canvas.height = 2048;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                    canvas.toBlob((blob) => resolve(blob), 'image/webp', 0.8);
                 };
             });
 
             const formData = new FormData();
-            formData.append('image', compressedBlob, 'panorama.jpg');
+            const compressedFile = new File([compressedBlob], `pano-${Date.now()}.webp`, { type: 'image/webp' });
+            formData.append('image', compressedFile);
 
             const uploadRes = await fetch('/api/upload', {
                 method: 'POST',
@@ -685,7 +686,7 @@ window.previewImage = (input) => {
             document.getElementById('upload-placeholder').classList.add('hidden');
             
             // Simpan path simulasi (asumsi server akan handle upload sesungguhnya)
-            document.getElementById('scene-image-path').value = 'assets/' + input.files[0].name;
+            document.getElementById('scene-image-path').value = input.files[0].name;
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -723,8 +724,8 @@ window.previewChangeScene = (id) => {
     
     const container = document.getElementById('preview-panorama');
     
-    // Antigravity: Cek apakah foto sudah ada di Cloud (Coming Soon Mode)
-    const isComingSoon = !s.image || s.image.startsWith('assets/');
+    // Mode Coming Soon jika gambar tidak ada
+    const isComingSoon = !s.image;
 
     if (isComingSoon) {
         if (container) {
@@ -762,8 +763,8 @@ window.previewChangeScene = (id) => {
     Object.entries(s.connections || {}).forEach(([dir, c]) => {
         const targetData = scenes.find(x => x.id === c.target);
         
-        // Antigravity: Hilangkan rute Soon di Preview (Cermin Halaman Utama)
-        const targetIsSoon = !targetData || !targetData.image || targetData.image.startsWith('assets/');
+        // Hotspot disembunyikan jika ruangan target masih coming soon
+        const targetIsSoon = !targetData || !targetData.image;
         if (targetIsSoon) return;
 
         h.push({
