@@ -23,3 +23,5 @@
 [  451811ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
 [  451811ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/rahasia_admin.html:0
 [  451837ms] [LOG] 💎 Data dimuat instan dari IndexedDB @ http://localhost:5173/rahasia_admin.js:46
+[  615580ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5173/@vite/client:559
+[  615585ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:5173/:0

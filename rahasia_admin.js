@@ -672,6 +672,8 @@ window.confirmPicker = () => {
         s.connections[pickingDir].yaw = pickingYaw;
         s.connections[pickingDir].pitch = pickingPitch;
         renderConnectionList(s);
+        // Antigravity: Update Peta secara instan agar garis rute muncul
+        initGraph();
     } else {
         s.facilities[pickingIdx].yaw = pickingYaw;
         s.facilities[pickingIdx].pitch = pickingPitch;
