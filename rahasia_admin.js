@@ -551,8 +551,8 @@ function renderConnectionList(scene) {
                 ${Object.entries(conns).map(([dir, c]) => `
                     <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 group">
                         <div class="flex items-center gap-3">
-                            <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-black uppercase text-center min-w-[50px]">${labelMap[dir.toLowerCase()] || dir}</span>
-                            <span class="text-xs font-bold text-slate-600 truncate max-w-[100px]">${c.label}</span>
+                            <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-black uppercase text-center">Rute</span>
+                            <span class="text-xs font-bold text-slate-600 truncate max-w-[150px]">${c.label || c.target}</span>
                         </div>
                         <div class="flex items-center gap-1">
                             <button onclick="window.editConnectionLabel('${scene.id}', '${dir}')" title="Edit Label" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all"><i data-lucide="pencil" class="w-4 h-4"></i></button>
@@ -615,10 +615,16 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
         if (f) { pickingYaw = f.yaw || 0; pickingPitch = f.pitch || 0; }
     } else {
         pickingType = 'connection';
-        pickingDir = typeOrDir || prompt('Arah (Depan, Belakang, Kiri, Kanan)?', 'forward').toLowerCase();
-        if (!pickingDir) return;
         
-        if (!s.connections) s.connections = {};
+        // Antigravity: Tidak perlu tanya arah lagi, buat key otomatis saja
+        if (!typeOrDir) {
+            if (!s.connections) s.connections = {};
+            const connKeys = Object.keys(s.connections);
+            pickingDir = "conn_" + (connKeys.length + 1) + "_" + Math.random().toString(36).substr(2, 4);
+        } else {
+            pickingDir = typeOrDir;
+        }
+
         if (!s.connections[pickingDir]) {
             // Antigravity: Gunakan Custom Modal dengan Dropdown (Pilihan Ruangan)
             const options = scenes
