@@ -444,22 +444,43 @@ window.addFacility = () => {
     });
 };
 
-window.openCustomPrompt = (title, onConfirm) => {
+window.openCustomPrompt = (title, onConfirm, options = null) => {
     const modal = document.getElementById('custom-prompt-modal');
     const content = document.getElementById('custom-prompt-content');
     const input = document.getElementById('custom-prompt-input');
+    const select = document.getElementById('custom-prompt-select');
+    const inputWrapper = document.getElementById('prompt-input-wrapper');
+    const selectWrapper = document.getElementById('prompt-select-wrapper');
     const btn = document.getElementById('custom-prompt-confirm');
     const titleEl = document.getElementById('prompt-modal-title');
+    const subtitleEl = document.getElementById('prompt-modal-subtitle');
 
     if (!modal) return;
 
     titleEl.innerText = title;
-    input.value = "";
     modal.classList.remove('hidden');
+
+    if (options && Array.isArray(options)) {
+        // Mode Dropdown
+        inputWrapper.classList.add('hidden');
+        selectWrapper.classList.remove('hidden');
+        subtitleEl.innerText = "Pilih salah satu dari daftar di bawah";
+        
+        select.innerHTML = options.map(opt => `
+            <option value="${opt.value}">${opt.label}</option>
+        `).join('');
+        
+    } else {
+        // Mode Text Input
+        inputWrapper.classList.remove('hidden');
+        selectWrapper.classList.add('hidden');
+        subtitleEl.innerText = "Masukkan informasi label untuk penanda tour";
+        input.value = "";
+    }
     
     // Set confirm callback
     btn.onclick = () => {
-        const val = input.value.trim();
+        const val = options ? select.value : input.value.trim();
         if (val) {
             onConfirm(val);
             window.closeCustomPrompt();
@@ -469,7 +490,7 @@ window.openCustomPrompt = (title, onConfirm) => {
     setTimeout(() => {
         content.classList.remove('scale-95', 'opacity-0');
         content.classList.add('scale-100', 'opacity-100');
-        input.focus();
+        if (!options) input.focus();
     }, 10);
 };
 
@@ -534,8 +555,9 @@ function renderConnectionList(scene) {
                             <span class="text-xs font-bold text-slate-600 truncate max-w-[100px]">${c.label}</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="window.startVisualConnect('${scene.id}', '${dir}')" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"><i data-lucide="map-pin" class="w-4 h-4"></i></button>
-                            <button onclick="window.removeConnection('${scene.id}', '${dir}')" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="window.editConnectionLabel('${scene.id}', '${dir}')" title="Edit Label" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                            <button onclick="window.startVisualConnect('${scene.id}', '${dir}')" title="Atur Posisi" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"><i data-lucide="map-pin" class="w-4 h-4"></i></button>
+                            <button onclick="window.removeConnection('${scene.id}', '${dir}')" title="Hapus" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 `).join('')}
@@ -547,6 +569,22 @@ function renderConnectionList(scene) {
     `;
     if (window.lucide) window.lucide.createIcons();
 }
+
+window.editConnectionLabel = (id, dir) => {
+    const s = scenes.find(x => x.id === id);
+    if (!s || !s.connections[dir]) return;
+    
+    window.openCustomPrompt("Ubah Label Rute", (newLabel) => {
+        s.connections[dir].label = newLabel;
+        renderConnectionList(s);
+        initGraph();
+    });
+    
+    // Set default value in input
+    setTimeout(() => {
+        document.getElementById('custom-prompt-input').value = s.connections[dir].label || s.connections[dir].target;
+    }, 20);
+};
 
 window.removeConnection = (id, dir) => {
     const s = scenes.find(x => x.id === id);
@@ -582,29 +620,24 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
         
         if (!s.connections) s.connections = {};
         if (!s.connections[pickingDir]) {
-            // Antigravity: Gunakan Nama Ruangan agar User tidak bingung ID
-            const titleList = scenes.map(x => x.title).join(', ');
-            let inputTarget = prompt(`Hubungkan ke Ruangan mana?\n\nDaftar: ${titleList}`);
-            if (!inputTarget) return;
-            
-            // Cari apakah input user cocok dengan Judul atau ID
-            const foundScene = scenes.find(x => 
-                x.title.toLowerCase() === inputTarget.toLowerCase() || 
-                x.id.toLowerCase() === inputTarget.toLowerCase()
-            );
+            // Antigravity: Gunakan Custom Modal dengan Dropdown (Pilihan Ruangan)
+            const options = scenes
+                .filter(x => x.id !== s.id) // Jangan hubungkan ke diri sendiri
+                .map(x => ({ value: x.id, label: x.title }));
 
-            if (!foundScene) {
-                alert(`❌ Ruangan "${inputTarget}" tidak ditemukan!\nSilakan ketik nama sesuai daftar: ${titleList}`);
-                return;
-            }
+            window.openCustomPrompt("Hubungkan Ruangan", (targetId) => {
+                const foundScene = scenes.find(x => x.id === targetId);
+                s.connections[pickingDir] = { 
+                    target: foundScene.id, 
+                    label: foundScene.title, 
+                    pitch: 0, 
+                    yaw: 0 
+                };
+                // Setelah pilih target, lanjut buka picker panorama
+                window.startVisualConnect(id, pickingDir);
+            }, options);
 
-            // Gunakan ID asli di background, tapi label-nya pakai Judul Ruangan
-            s.connections[pickingDir] = { 
-                target: foundScene.id, 
-                label: foundScene.title, 
-                pitch: 0, 
-                yaw: 0 
-            };
+            return; // Berhenti dulu sampai user pilih di modal
         } else {
             const c = s.connections[pickingDir];
             pickingYaw = c.yaw || 0;
