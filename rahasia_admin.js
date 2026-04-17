@@ -168,16 +168,25 @@ function initGraph() {
         const conns = s.connections || {};
         Object.entries(conns).forEach(([dir, c]) => {
             const labelsMap = { 'forward': 'Depan', 'back': 'Belakang', 'left': 'Kiri', 'right': 'Kanan' };
-            edges.push({ 
-                from: s.id, 
-                to: c.target, 
-                label: labelsMap[dir] || dir,
-                arrows: 'to', 
-                color: { color: '#818cf8', opacity: 0.6 },
-                width: 1.5,
-                smooth: { type: 'curvedCW', roundness: 0.15 },
-                font: { align: 'top', size: 8, face: 'Outfit', color: '#6366f1', strokeWidth: 0 }
-            });
+            
+            // Antigravity: Cek apakah target ID benar-benar ada di daftar scene
+            // Jika user ngetik "Halaman Depan" padahal ID-nya "scene1", garis tidak akan muncul.
+            const targetScene = scenes.find(x => x.id === c.target);
+            
+            if (targetScene) {
+                edges.push({ 
+                    from: s.id, 
+                    to: c.target, 
+                    label: labelsMap[dir] || dir,
+                    arrows: 'to', 
+                    color: { color: '#818cf8', opacity: 0.6 },
+                    width: 1.5,
+                    smooth: { type: 'curvedCW', roundness: 0.15 },
+                    font: { align: 'top', size: 8, face: 'Outfit', color: '#6366f1', strokeWidth: 0 }
+                });
+            } else {
+                console.warn(`⚠️ Rute dari ${s.id} ke ${c.target} tidak muncul karena ID target tidak ditemukan.`);
+            }
         });
     });
 
@@ -573,10 +582,29 @@ window.startVisualConnect = (id, typeOrDir, idx) => {
         
         if (!s.connections) s.connections = {};
         if (!s.connections[pickingDir]) {
-            const list = scenes.map(x => x.id).join(', ');
-            const target = prompt(`Target ID (${list}):`);
-            if (!target) return;
-            s.connections[pickingDir] = { target, label: target, pitch: 0, yaw: 0 };
+            // Antigravity: Gunakan Nama Ruangan agar User tidak bingung ID
+            const titleList = scenes.map(x => x.title).join(', ');
+            let inputTarget = prompt(`Hubungkan ke Ruangan mana?\n\nDaftar: ${titleList}`);
+            if (!inputTarget) return;
+            
+            // Cari apakah input user cocok dengan Judul atau ID
+            const foundScene = scenes.find(x => 
+                x.title.toLowerCase() === inputTarget.toLowerCase() || 
+                x.id.toLowerCase() === inputTarget.toLowerCase()
+            );
+
+            if (!foundScene) {
+                alert(`❌ Ruangan "${inputTarget}" tidak ditemukan!\nSilakan ketik nama sesuai daftar: ${titleList}`);
+                return;
+            }
+
+            // Gunakan ID asli di background, tapi label-nya pakai Judul Ruangan
+            s.connections[pickingDir] = { 
+                target: foundScene.id, 
+                label: foundScene.title, 
+                pitch: 0, 
+                yaw: 0 
+            };
         } else {
             const c = s.connections[pickingDir];
             pickingYaw = c.yaw || 0;
