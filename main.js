@@ -460,5 +460,10 @@ document.addEventListener('keydown', e => {
     if (dir && conn[dir]) changeScene(conn[dir].target);
 });
 
+window.resetToHome = () => {
+    localStorage.removeItem('vt_last_scene');
+    changeScene('scene1');
+};
+
 window.onload = init;
 window.changeScene = changeScene; // Ensure accessible globally
