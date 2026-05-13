@@ -870,7 +870,7 @@ window.previewChangeScene = (id) => {
 };
 
 function renderH(d, a) { d.innerHTML = `<div class="custom-path-node"></div><span>${a}</span>`; }
-function renderF(d, a) { d.innerHTML = `<div class="custom-facility-node"></div><span>${a}</span>`; }
+function renderF(d, a) { d.innerHTML = `<div class="custom-facility-node"></div>`; }
 
 window.closeQuickPreview = () => {
     document.getElementById('quick-preview-modal').classList.add('hidden');

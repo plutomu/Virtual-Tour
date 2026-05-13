@@ -403,10 +403,6 @@ function facilityHotspotElement(hotSpotDiv, args) {
     const node = document.createElement('div');
     node.classList.add('custom-facility-node');
     hotSpotDiv.appendChild(node);
-
-    const tooltip = document.createElement('span');
-    tooltip.innerHTML = args;
-    hotSpotDiv.appendChild(tooltip);
 }
 
 // Custom DOM element for hotspots (Normal Arrow)
