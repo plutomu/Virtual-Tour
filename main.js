@@ -71,47 +71,40 @@ async function setCache(data) {
 }
 
 async function fetchScenes() {
-    // 1. Ambil dari IndexedDB agar pengunjung tidak menunggu
-    const cachedData = await getCache();
-    if (cachedData) {
-        scenes = cachedData;
-        console.log('💎 Data tour dimuat instan dari cache lokal');
-    }
-
     try {
-        const response = await fetch('/api/scenes');
+        const response = await fetch('/api/scenes?' + Date.now());
         if (!response.ok) throw new Error('Backend server is not responding');
         const data = await response.json();
         
-        // Convert array to object key by id
         const freshScenes = data.reduce((acc, scene) => {
             acc[scene.id] = scene;
             return acc;
         }, {});
 
-        // 2. Jika ada data baru, update & simpan ke cache
-        if (JSON.stringify(freshScenes) !== JSON.stringify(scenes)) {
-            scenes = freshScenes;
+        const changed = JSON.stringify(freshScenes) !== JSON.stringify(scenes);
+        scenes = freshScenes;
+        await setCache(freshScenes);
+
+        if (changed) {
             console.log('🔄 Data tour diperbarui dari cloud');
-            
-            // Auto-refresh UI jika viewer sudah siap
             if (viewer) {
                 const s = scenes[current];
                 if (s) {
                     document.getElementById('room-title').textContent = s.title;
                     document.getElementById('room-desc').textContent = s.desc || "";
                     renderFacilities(s.facilities);
-                    // Refresh hotspots jika memungkinkan atau biarkan navigasi berikutnya yang update
                 }
             }
         }
 
-        await setCache(freshScenes);
-
     } catch (e) {
         console.error('Failed to fetch scenes:', e);
-        // Tampilkan pesan error hanya jika benar-benar tidak ada data (server mati & cache kosong)
-        if (Object.keys(scenes).length === 0) {
+        // Fallback ke cache lokal jika server tidak merespon
+        const cachedData = await getCache();
+        if (cachedData) {
+            scenes = cachedData;
+            console.log('💎 Data tour dimuat dari cache lokal (offline)');
+        } else {
             const flash = document.getElementById('flash');
             if (flash) {
                 flash.style.opacity = '1';
@@ -185,6 +178,9 @@ async function init() {
 
     loadScene(current);
     setTimeout(() => showText(), 500);
+
+    // Auto-refresh data setiap 15 detik agar update admin langsung muncul
+    setInterval(() => fetchScenes(), 15000);
 }
 
 /* ─── Change scene ─── */

@@ -96,13 +96,12 @@
     }
 
     #room-facilities {
-        gap: 4px;
+        gap: 2px 10px;
         margin-top: 8px;
     }
 
     .facility-tag {
-        font-size: 10px;
-        padding: 3px 10px;
+        font-size: 11px;
     }
 
     /* Adjust Map positioning to avoid overlap with info-bar on very small screens */

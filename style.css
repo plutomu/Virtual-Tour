@@ -369,7 +369,7 @@ input:checked + .slider:before {
 #room-facilities {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px 12px;
     margin-top: 10px;
     opacity: 0;
     transform: translateY(8px);
@@ -382,17 +382,10 @@ input:checked + .slider:before {
 }
 
 .facility-tag {
-    display: inline-block;
-    padding: 4px 12px;
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    border-radius: 999px;
     color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
 }
 
 #room-title.show,
