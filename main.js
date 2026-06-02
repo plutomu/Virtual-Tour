@@ -381,26 +381,7 @@ function getHotspots(sceneId) {
         });
     });
 
-    // Add Facility Hotspots
-    if (sceneData.facilities) {
-        sceneData.facilities.forEach(f => {
-            spots.push({
-                pitch: f.pitch,
-                yaw: f.yaw,
-                cssClass: 'custom-facility',
-                createTooltipFunc: facilityHotspotElement,
-                createTooltipArgs: f.label
-            });
-        });
-    }
-
     return spots;
-}
-
-function facilityHotspotElement(hotSpotDiv, args) {
-    const node = document.createElement('div');
-    node.classList.add('custom-facility-node');
-    hotSpotDiv.appendChild(node);
 }
 
 // Custom DOM element for hotspots (Normal Arrow)
