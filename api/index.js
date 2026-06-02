@@ -39,7 +39,8 @@ app.get('/api/scenes', async (req, res) => {
             title: s.name || s.title || 'Untitled',
             image: s.panorama || s.image || '',
             connections: s.links || s.connections || {},
-            desc: s.desc || ''
+            desc: s.desc || '',
+            facilities: s.facilities || []
         }));
         
         res.json(mappedData);
@@ -171,7 +172,8 @@ app.post('/api/scenes', async (req, res) => {
             title: s.title,
             image: s.image,
             connections: s.connections || {},
-            desc: s.desc || ''
+            desc: s.desc || '',
+            facilities: s.facilities || []
         }));
 
         // Hapus data lama dan masukkan yang baru (Sync)
@@ -199,7 +201,8 @@ app.put('/api/scenes', async (req, res) => {
             title: s.title,
             image: s.image,
             connections: s.connections || {},
-            desc: s.desc || ''
+            desc: s.desc || '',
+            facilities: s.facilities || []
         }));
 
         await supabase.from('virtual_tour').delete().neq('id', '_dummy_');

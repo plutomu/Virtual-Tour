@@ -100,6 +100,7 @@ async function fetchScenes() {
                 if (s) {
                     document.getElementById('room-title').textContent = s.title;
                     document.getElementById('room-desc').textContent = s.desc || "";
+                    renderFacilities(s.facilities);
                     // Refresh hotspots jika memungkinkan atau biarkan navigasi berikutnya yang update
                 }
             }
@@ -339,6 +340,7 @@ function loadScene(id) {
 
     document.getElementById('room-title').textContent = s.title;
     document.getElementById('room-desc').textContent = s.desc;
+    renderFacilities(s.facilities);
 
     // Smart Preload: Hanya ambil gambar di ruangan terdekat
     preloadAdjacentScenes(id);
@@ -425,18 +427,36 @@ function hotspotElement(hotSpotDiv, args) {
     hotSpotDiv.appendChild(tooltip);
 }
 
+function renderFacilities(facilities) {
+    const container = document.getElementById('room-facilities');
+    if (!container) return;
+    if (!facilities || facilities.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = 'flex';
+    container.innerHTML = facilities.map(f => `
+        <span class="facility-tag">${f.label}</span>
+    `).join('');
+}
+
 /* ─── Text visibility ─── */
 function showText() {
     const t = document.getElementById('room-title');
     const d = document.getElementById('room-desc');
+    const f = document.getElementById('room-facilities');
     if (t) t.classList.add('show');
     if (d) d.classList.add('show');
+    if (f) f.classList.add('show');
 }
 function hideText() {
     const t = document.getElementById('room-title');
     const d = document.getElementById('room-desc');
+    const f = document.getElementById('room-facilities');
     if (t) t.classList.remove('show');
     if (d) d.classList.remove('show');
+    if (f) f.classList.remove('show');
 }
 
 /* ─── Keyboard & Shortcuts ─── */
