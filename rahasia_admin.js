@@ -326,18 +326,25 @@ window.saveScene = async function() {
         if (imageInput && imageInput.files && imageInput.files[0]) {
             const originalFile = imageInput.files[0];
             
-            // Kompresi Client-Side agar upload secepat kilat & tembus limit Vercel
+            // Kompresi Client-Side agar ukuran aman (max ~50 MB) & upload cepat
             const compressedBlob = await new Promise((resolve) => {
                 const img = new Image();
                 img.src = URL.createObjectURL(originalFile);
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    // Standar 4K Panorama (4096 x 2048)
-                    canvas.width = 4096; 
-                    canvas.height = 2048;
+                    const maxPixels = 4000000; // ~4 megapixel (misal 2560x1280)
+                    let w = img.naturalWidth, h = img.naturalHeight;
+                    if (w * h > maxPixels) {
+                        const ratio = Math.sqrt(maxPixels / (w * h));
+                        w = Math.round(w * ratio);
+                        h = Math.round(h * ratio);
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
                     const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob((blob) => resolve(blob), 'image/webp', 0.8);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    // WebP kualitas 0.7 -> ukuran aman di bawah 50 MB
+                    canvas.toBlob((blob) => resolve(blob), 'image/webp', 0.7);
                 };
             });
 
