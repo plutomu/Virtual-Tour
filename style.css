@@ -679,30 +679,4 @@ input:checked + .slider:before {
 .entering {
     filter: blur(0) brightness(0.75);
 }
-/* Facility Icon Hotspot */
-.custom-facility-node {
-    width: 32px;
-    height: 32px;
-    background: #10b981; /* Emerald 500 */
-    border: 3px solid white;
-    border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.custom-facility-node:hover {
-    transform: scale(1.2);
-    background: #059669; /* Emerald 600 */
-    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
-}
-.custom-facility-node::after {
-    content: 'i';
-    color: white;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-}
+
