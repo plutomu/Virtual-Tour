@@ -382,10 +382,27 @@ input:checked + .slider:before {
 }
 
 .facility-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
     color: #ffffff;
     font-size: 12px;
     font-weight: 600;
     text-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.facility-dot {
+    width: 7px;
+    height: 7px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    flex-shrink: 0;
 }
 
 #room-title.show,

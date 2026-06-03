@@ -414,7 +414,7 @@ function renderFacilities(facilities) {
     }
     container.style.display = 'flex';
     container.innerHTML = facilities.map(f => `
-        <span class="facility-tag">${f.label}</span>
+        <span class="facility-tag"><span class="facility-dot"></span>${f.label}</span>
     `).join('');
 }
 

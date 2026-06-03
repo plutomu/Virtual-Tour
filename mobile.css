@@ -102,6 +102,12 @@
 
     .facility-tag {
         font-size: 11px;
+        padding: 3px 10px;
+    }
+
+    .facility-dot {
+        width: 6px;
+        height: 6px;
     }
 
     /* Adjust Map positioning to avoid overlap with info-bar on very small screens */
