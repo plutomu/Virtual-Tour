@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     { "source": "/99", "destination": "/rahasia_admin.html" },
-    { "source": "/api/(.*)", "destination": "/api" }
+    { "source": "/api/((?!ping).*)", "destination": "/api" }
   ],
   "crons": [
     {
