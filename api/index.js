@@ -244,6 +244,27 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     }
 });
 
+// Cron Job Ping - Keep Supabase Active
+app.get('/api/ping', async (req, res) => {
+    // Verifikasi cron secret dari Vercel
+    const authHeader = req.headers['authorization'];
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const supabase = getSupabase();
+        // Lakukan query ringan agar DB tetap aktif
+        const { error } = await supabase.from('virtual_tour').select('id').limit(1);
+        if (error) throw error;
+        res.json({ status: 'ok', message: 'Database is active', timestamp: new Date().toISOString() });
+    } catch (e) {
+        console.error('Ping Error:', e.message);
+        res.status(500).json({ status: 'error', message: e.message });
+    }
+});
+
 if (process.env.NODE_ENV !== 'production' && import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('api/index.js')) {
     const port = process.env.PORT || 3001;
     app.listen(port, () => {
