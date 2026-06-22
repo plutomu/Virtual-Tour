@@ -2,12 +2,11 @@
   "version": 2,
   "rewrites": [
     { "source": "/99", "destination": "/rahasia_admin.html" },
-    { "source": "/api/ping", "destination": "/api/ping" },
     { "source": "/api/(.*)", "destination": "/api" }
   ],
   "crons": [
     {
-      "path": "/api/ping",
+      "path": "/cron/ping",
       "schedule": "0 */6 * * *"
     }
   ]
