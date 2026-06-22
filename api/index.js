@@ -244,9 +244,14 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     }
 });
 
+// Simple test route - no auth, no database
+app.get('/api/test', (req, res) => {
+    res.json({ status: 'ok', message: 'API is working', timestamp: new Date().toISOString() });
+});
+
 // Cron Job Ping - Keep Supabase Active
 app.get('/api/ping', async (req, res) => {
-    // Verifikasi cron secret dari Vercel
+    // Verifikasi cron secret dari Vercel (skip jika belum diset)
     const authHeader = req.headers['authorization'];
     const cronSecret = process.env.CRON_SECRET;
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
@@ -263,6 +268,16 @@ app.get('/api/ping', async (req, res) => {
         console.error('Ping Error:', e.message);
         res.status(500).json({ status: 'error', message: e.message });
     }
+});
+
+// 404 handler - catch all unmatched routes
+app.use((req, res) => {
+    res.status(404).json({ 
+        error: 'Route not found', 
+        path: req.path, 
+        method: req.method,
+        hint: 'Available routes: /api/scenes, /api/login, /api/users, /api/upload, /api/ping, /api/test'
+    });
 });
 
 if (process.env.NODE_ENV !== 'production' && import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('api/index.js')) {
