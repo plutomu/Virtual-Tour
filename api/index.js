@@ -10,6 +10,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Debug middleware - log ALL requests
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    
+    // Early interceptor for ping - handle before routes
+    if (req.path === '/api/ping' || req.path === '/ping') {
+        return res.json({ 
+            message: 'pong', 
+            path: req.path,
+            timestamp: new Date().toISOString() 
+        });
+    }
+    
+    next();
+});
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
