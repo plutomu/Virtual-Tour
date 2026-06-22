@@ -244,14 +244,14 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     }
 });
 
-// Simple test route - no auth, no database
-app.get('/api/test', (req, res) => {
-    res.json({ status: 'ok', message: 'API is working', timestamp: new Date().toISOString() });
+// Simple ping test - no auth, no database
+app.get('/api/ping', (req, res) => {
+    res.json({ message: 'pong' });
 });
 
-// Cron Job Ping - Keep Supabase Active
-app.get('/api/ping', async (req, res) => {
-    // Verifikasi cron secret dari Vercel (skip jika belum diset)
+// Cron Job Keepalive - Keep Supabase Active
+app.get('/api/cron/keepalive', async (req, res) => {
+    // Verifikasi cron secret dari Vercel
     const authHeader = req.headers['authorization'];
     const cronSecret = process.env.CRON_SECRET;
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
@@ -265,7 +265,7 @@ app.get('/api/ping', async (req, res) => {
         if (error) throw error;
         res.json({ status: 'ok', message: 'Database is active', timestamp: new Date().toISOString() });
     } catch (e) {
-        console.error('Ping Error:', e.message);
+        console.error('Keepalive Error:', e.message);
         res.status(500).json({ status: 'error', message: e.message });
     }
 });
