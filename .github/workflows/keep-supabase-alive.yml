@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Menjalankan ping otomatis setiap 3 hari sekali pukul 00:00 UTC
-    - cron: '0 0 */3 * *'
+    # Menjalankan ping otomatis setiap 1 hari sekali pada pukul 00:00 UTC
+    - cron: '0 0 * * *'
   # Pemicuan manual dari tab Actions di GitHub
   workflow_dispatch:
 
