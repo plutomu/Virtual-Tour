@@ -269,7 +269,7 @@ app.get('/api/ping', (req, res) => {
 app.get('/api/cron/keepalive', async (req, res) => {
     // Verifikasi cron secret dari Vercel
     const authHeader = req.headers['authorization'];
-    const cronSecret = process.env.CRON_SECRET;
+    const cronSecret = process.env.CRON_SECRET?.trim();
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
