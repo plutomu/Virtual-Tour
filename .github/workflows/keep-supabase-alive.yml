@@ -1,0 +1,37 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Menjalankan ping otomatis setiap 3 hari sekali pukul 00:00 UTC
+    - cron: '0 0 */3 * *'
+  # Pemicuan manual dari tab Actions di GitHub
+  workflow_dispatch:
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://yuunwxrhurjmpvfyenlk.supabase.co' }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'sb_publishable_15zt1oPa63NfQ4SkbhycSQ_wEZV69Jm' }}
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          echo "Mengirim ping ke Supabase REST API..."
+          
+          SUPABASE_URL="${{ env.SUPABASE_URL }}"
+          SUPABASE_URL="${SUPABASE_URL%/}"
+
+          HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X GET "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${{ env.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ env.SUPABASE_ANON_KEY }}")
+
+          echo "HTTP Status Code: $HTTP_RESPONSE"
+
+          if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 400 ]; then
+            echo "Berhasil! Supabase API merespons dengan status $HTTP_RESPONSE."
+          else
+            echo "Peringatan: Supabase merespons dengan HTTP Status $HTTP_RESPONSE"
+          fi
