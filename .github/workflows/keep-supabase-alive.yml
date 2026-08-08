@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Menjalankan ping otomatis setiap 1 hari sekali pada pukul 00:00 UTC
-    - cron: '0 0 * * *'
+    # Menjalankan ping otomatis setiap 12 jam sekali (00:00 & 12:00 UTC)
+    - cron: '0 */12 * * *'
   # Pemicuan manual dari tab Actions di GitHub
   workflow_dispatch:
 
@@ -16,22 +16,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping Supabase Database
         run: |
-          echo "Mengirim ping ke Supabase REST API..."
+          echo "Mengirim ping query ke Supabase PostgreSQL Database..."
           
           SUPABASE_URL="${{ env.SUPABASE_URL }}"
           SUPABASE_URL="${SUPABASE_URL%/}"
 
+          # Query langsung tabel virtual_tour agar menrigger PostgreSQL DB activity
           HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X GET "${SUPABASE_URL}/rest/v1/" \
+            -X GET "${SUPABASE_URL}/rest/v1/virtual_tour?select=id&limit=1" \
             -H "apikey: ${{ env.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ env.SUPABASE_ANON_KEY }}")
 
           echo "HTTP Status Code: $HTTP_RESPONSE"
 
           if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 400 ]; then
-            echo "Berhasil! Supabase API merespons dengan status $HTTP_RESPONSE."
+            echo "Berhasil! Supabase DB merespons dengan status $HTTP_RESPONSE."
           else
             echo "Peringatan: Supabase merespons dengan HTTP Status $HTTP_RESPONSE"
           fi
+
